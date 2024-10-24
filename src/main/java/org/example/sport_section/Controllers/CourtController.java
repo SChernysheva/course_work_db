@@ -3,6 +3,7 @@ package org.example.sport_section.Controllers;
 
 import org.example.sport_section.Models.Court;
 import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class CourtController {
     }
     @GetMapping
     public CompletableFuture<List<Court>> getAllProducts() throws SQLException {
-        System.out.println("here");
+        System.out.println("controller: " + SecurityUtils.getCurrentUserEmail());
         return courtService.getCourts();
     }
 }

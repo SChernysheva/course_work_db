@@ -31,8 +31,8 @@ public class AuthorizeService {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.getUser(email));
     }
 
-    public void saveEmail(String email, String password) {
-        authorizeRepository.saveEmail(email, password);
+    public void saveEmail(String email, String password, long userId) {
+        authorizeRepository.saveEmail(email, password, userId);
     }
 
     @Async

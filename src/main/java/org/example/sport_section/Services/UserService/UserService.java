@@ -28,13 +28,13 @@ public class UserService {
                 user.setId(res.getInt("id"));
                 user.setFirst_name(res.getString("first_name"));
                 user.setLast_name(res.getString("last_name"));
-                user.setPatronymic(res.getString("patronymic"));
                 user.setEmail(res.getString("email"));
                 user.setPhone(res.getString("phone"));
                 people.add(user);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            //todo
         }
         return people;
     }
@@ -50,34 +50,45 @@ public class UserService {
                 user.setId(res.getInt("id"));
                 user.setFirst_name(res.getString("first_name"));
                 user.setLast_name(res.getString("last_name"));
-                user.setPatronymic(res.getString("patronymic"));
                 user.setEmail(res.getString("email"));
                 user.setPhone(res.getString("phone"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            //todo
         }
         return user;
     }
 
 
 
-    public void addUser(User user) throws SQLException
+    public Long addUser(User user) throws SQLException
     {
         try
         {
-            PreparedStatement statement = databaseConfig.getConnection().prepareStatement(
-                    "INSERT INTO users (first_name, last_name, patronyic, email, phome) values (?, ?, ?, ?, ?)"
-            );
+            String sql = "INSERT INTO users (first_name, last_name, email, phone) values (?, ?, ?, ?)";
+            PreparedStatement statement = databaseConfig.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
             statement.setString(1, user.getFirst_name());
             statement.setString(2, user.getLast_name());
-            statement.setString(3, user.getPatronymic());
-            statement.setString(4, user.getEmail());
-            statement.setString(5, user.getPhone());
-            statement.executeUpdate();
+            statement.setString(3, user.getEmail());
+            statement.setString(4, user.getPhone());
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getLong(1);
+                    }
+                }
+            } else {
+                throw new SQLException("No rows affected.");
+                //todo
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            //todo
         }
+        return null;
     }
 
     public void deleteUser(int id) throws SQLException {

@@ -12,9 +12,13 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Utils.SecurityUtils;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -35,18 +39,57 @@ public class HomePage extends HorizontalLayout {
         setSizeFull();
         setSpacing(false);
         add(loadingSpinner);
+        System.out.println("vs: " + VaadinSession.getCurrent().getAttribute("email"));
         CompletableFuture.supplyAsync(this::fetchCourts, executor)
                 .thenAcceptAsync(courts -> {
                     getUI().ifPresent(ui -> ui.access(() ->  {
                         remove(loadingSpinner);
                         loadContent(courts);
-                        User user = SecurityUtils.getCurrentUser();
-                        System.out.println(user);
                     }));
                 });
 
 
         UI.getCurrent().setPollInterval(500);
+    }
+
+    private Button getExitButton() {
+        Button exitButton = new Button("Выйти");
+
+        exitButton.getStyle().set("background-color", "orange");
+        exitButton.getStyle().set("color", "white");
+        exitButton.getStyle().set("font-size", "12px");
+        exitButton.getStyle().set("border", "none");
+        exitButton.getStyle().set("padding", "5px 10px");
+
+        exitButton.addClickListener(event -> {
+            exit();
+        });
+        return exitButton;
+    }
+    private VerticalLayout createSidebarViewUser() {
+        VerticalLayout sidebar = new VerticalLayout();
+
+        // Получение информации о текущем пользователе в сессии
+        String userEmail = (String) VaadinSession.getCurrent().getAttribute("email");
+
+        // Создание контейнера с информацией о пользователе
+        Div userContainer = new Div();
+        userContainer.getStyle().set("background-color", "lightgray");
+        userContainer.getStyle().set("padding", "5px");
+
+        // Добавление текста с информацией о пользователе
+        Span userText = new Span("Пользователь: " + userEmail);
+        userContainer.add(userText);
+
+        // Добавление контейнера с информацией о пользователе на боковую панель
+        sidebar.add(userContainer);
+        sidebar.setAlignItems(Alignment.CENTER); // Центрирование по вертикали
+        sidebar.setWidth("200px"); // Задание ширины боковой панели
+
+        return sidebar;
+    }
+    private void exit() {
+        UI.getCurrent().navigate(StartPage.class);
     }
 
     private void loadContent(List<Court> courts) {
@@ -65,6 +108,8 @@ public class HomePage extends HorizontalLayout {
         cardLayout.setAlignItems(Alignment.CENTER); // Центруем по горизонтали
         overlay.add(cardLayout);
         imageContainer.add(overlay);
+        sidebar.add(createSidebarViewUser());
+        sidebar.add(getExitButton());
         add(sidebar);
         add(imageContainer);
         // Обновление списков

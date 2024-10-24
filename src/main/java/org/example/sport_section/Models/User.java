@@ -4,7 +4,6 @@ public class User {
     private int id;
     private String first_name;
     private String last_name;
-    private String patronymic;
     private String email;
     private String phone;
 
@@ -12,12 +11,17 @@ public class User {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
-        this.patronymic = patronymic;
         this.email = email;
         this.phone = phone;
     }
-
     public User() {}
+
+    public User(String firstName, String lastName, String email, String phone) {
+        this.first_name = firstName;
+        this.last_name = lastName;
+        this.email = email;
+        this.phone = phone;
+    }
 
     public int getId() {
         return id;
@@ -41,14 +45,6 @@ public class User {
 
     public void setLast_name(String last_name) {
         this.last_name = last_name;
-    }
-
-    public String getPatronymic() {
-        return patronymic;
-    }
-
-    public void setPatronymic(String patronymic) {
-        this.patronymic = patronymic;
     }
 
     public String getEmail() {

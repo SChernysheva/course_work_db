@@ -12,24 +12,24 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.Court;
-import org.example.sport_section.Models.User;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Utils.SecurityUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Route("")
 public class StartPage extends VerticalLayout implements BeforeEnterObserver {
     private final Div loadingSpinner = createLoadingSpinner();
     private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    //SecurityContext context = SecurityContextHolder.getContext();
 
     public StartPage() {
         setClassName("login-layout");
@@ -52,7 +52,7 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
     }
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if (SecurityUtils.getCurrentUser() != null) {
+        if (SecurityUtils.getCurrentUserEmail() != null) {
             // Пользователь уже аутентифицирован
             event.forwardTo(HomePage.class);
         }
@@ -81,6 +81,7 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
                         if (user != null) {
                             // сравнить пароли
                             validatePasswords(password, email);
+                            System.out.println("login: " + SecurityContextHolder.getContext());
                         } else {
                             // Неправильный email или пароль
                             Notification.show("Неверный email или пароль!", 3000, Notification.Position.MIDDLE);
@@ -96,10 +97,9 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
                         if (checkPasswords(hashPasswordUser, expectedPassword)) {
                             // Аутентификация успешна
                             Notification.show("Успешный вход для " + email);
-                            User user = new User();
-                            user.setEmail(email);
-                            //VaadinSession.getCurrent().setAttribute(User.class, user);
-                            toStartPage();
+                            //saveUserInSession(email, hashPasswordUser);
+                            VaadinSession.getCurrent().setAttribute("email", email);
+                            toHomePage();
                         } else {
                             Notification.show("Неверный пароль!", 3000, Notification.Position.MIDDLE);
                         }
@@ -120,8 +120,13 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
         UI.getCurrent().navigate(RegisterPage.class);
     }
 
-    private void toStartPage() {
+    private void toHomePage() {
         UI.getCurrent().navigate(HomePage.class);
+    }
+    public void saveUserInSession(String email, String password) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getForObject("http://localhost:8080/api/authorize/addUserInSession?email=" +
+                email + "&password=" + password, ResponseEntity.class);
     }
 
     private UserModelAuthorization getUser(String email) {

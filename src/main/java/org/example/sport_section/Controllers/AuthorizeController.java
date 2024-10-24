@@ -1,14 +1,12 @@
 package org.example.sport_section.Controllers;
 
-import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Services.CourtService.AuthorizeService;
-import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -21,18 +19,21 @@ public class AuthorizeController {
         this.authorizeService = authorizeService;
     }
     @GetMapping("/getHashPassword")
-    public CompletableFuture<String> getHashPassword(@RequestParam String email) throws SQLException {
-        System.out.println("here");
+    public CompletableFuture<String> getHashPassword(@RequestParam String email) {
         return authorizeService.getHashPasswordForEmail(email);
     }
     @GetMapping("/getUser")
-    public CompletableFuture<UserModelAuthorization> getUser(@RequestParam String email) throws SQLException {
-        System.out.println("here");
+    public CompletableFuture<UserModelAuthorization> getUser(@RequestParam String email) {
         return authorizeService.getUser(email);
     }
     @PostMapping("/addUser")
-    public void getUser(@RequestParam String email, @RequestParam String password) throws SQLException {
-        System.out.println("here");
-        authorizeService.saveEmail(email, password);
+    public void addUser(@RequestParam String email, @RequestParam String password, @RequestParam long userId) {
+        authorizeService.saveEmail(email, password, userId);
+    }
+
+    @PostMapping("/addUserInSession")
+    public ResponseEntity<Void> addUserInSession(@RequestParam String email, @RequestParam String password) {
+        SecurityUtils.saveUserInCurrentSession(email, password);
+        return ResponseEntity.ok().build();
     }
 }

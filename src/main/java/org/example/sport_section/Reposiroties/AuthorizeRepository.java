@@ -63,12 +63,13 @@ public class AuthorizeRepository {
         }
         return user;
     }
-    public void saveEmail(String email, String password) {
-        String sql = "INSERT INTO passwords (email, hash_password) VALUES (?, ?)";
+    public void saveEmail(String email, String password, long userId) {
+        String sql = "INSERT INTO passwords (email, hash_password, id) VALUES (?, ?, ?)";
         try (PreparedStatement preparedStatement = databaseConfig.getConnection().prepareStatement(sql)) {
             preparedStatement.setString(1, email);
             String hashPassword = BCrypt.hashpw(password, BCrypt.gensalt());
             preparedStatement.setString(2, hashPassword);
+            preparedStatement.setLong(3, userId);
             preparedStatement.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
