@@ -1,4 +1,4 @@
-package org.example.sport_section.Controllers;
+package org.example.sport_section.Controllers.User;
 
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Services.UserService.UserService;
@@ -20,6 +20,6 @@ public class UserController {
     public Long addUser(@RequestParam String email, @RequestParam String firstName, @RequestParam String lastName,
                         @RequestParam String phone) throws SQLException {
         User user = new User(firstName, lastName, email, phone);
-        return userService.addUser(user);
+        return userService.addUserAsync(user).join();
     }
 }

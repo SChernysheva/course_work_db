@@ -1,4 +1,4 @@
-package org.example.sport_section.Views;
+package org.example.sport_section.front.Views.Authorize;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -14,24 +14,20 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Utils.SecurityUtils;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContext;
+import org.example.sport_section.front.Views.Home.HomePage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Route("")
 public class StartPage extends VerticalLayout implements BeforeEnterObserver {
     private final Div loadingSpinner = createLoadingSpinner();
-    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    //SecurityContext context = SecurityContextHolder.getContext();
+    private final WebClient webClient;
 
-    public StartPage() {
+    @Autowired
+    public StartPage(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api").build();
         setClassName("login-layout");
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -73,31 +69,29 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
 
     private void login(String email, String password) {
         add(loadingSpinner);
-        // получить пользователя
-        CompletableFuture.supplyAsync(() -> getUser(email), executor)
-                .thenAcceptAsync(user -> {
+        webClient.get().uri("/authorize/getUser?email=" + email).retrieve().bodyToMono(UserModelAuthorization.class)
+                .subscribe(user -> {
                     getUI().ifPresent(ui -> ui.access(() -> {
-                        remove(loadingSpinner);
-                        if (user != null) {
-                            // сравнить пароли
-                            validatePasswords(password, email);
-                            System.out.println("login: " + SecurityContextHolder.getContext());
-                        } else {
-                            // Неправильный email или пароль
-                            Notification.show("Неверный email или пароль!", 3000, Notification.Position.MIDDLE);
-                        }
-                    }));
-                });
+                remove(loadingSpinner);
+                if (user.getEmail() != null) {
+                    // сравнить пароли
+                    validatePasswords(password, email);
+                } else {
+                    // Неправильный email или пароль
+                    Notification.show("Неверный email или пароль!", 3000, Notification.Position.MIDDLE);
+                }
+            }));
+        });
     }
 
     private void validatePasswords(String hashPasswordUser, String email) {
-        CompletableFuture.supplyAsync(() -> getHashPassword(email), executor)
-                .thenAcceptAsync(expectedPassword -> {
+        webClient.get().uri("/authorize/getHashPassword?email=" + email).retrieve().bodyToMono(String.class)
+                .subscribe(expectedPassword -> {
                     getUI().ifPresent(ui -> ui.access(() -> {
                         if (checkPasswords(hashPasswordUser, expectedPassword)) {
                             // Аутентификация успешна
                             Notification.show("Успешный вход для " + email);
-                            //saveUserInSession(email, hashPasswordUser);
+                            SecurityUtils.saveUserInCurrentSession(email, hashPasswordUser);
                             VaadinSession.getCurrent().setAttribute("email", email);
                             toHomePage();
                         } else {
@@ -105,11 +99,6 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
                         }
                     }));
                 });
-    }
-
-    public String getHashPassword(String email) {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject("http://localhost:8080/api/authorize/getHashPassword?email=" + email, String.class);
     }
 
     private boolean checkPasswords(String passwordProvided, String passwordExpected) {
@@ -122,16 +111,6 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
 
     private void toHomePage() {
         UI.getCurrent().navigate(HomePage.class);
-    }
-    public void saveUserInSession(String email, String password) {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:8080/api/authorize/addUserInSession?email=" +
-                email + "&password=" + password, ResponseEntity.class);
-    }
-
-    private UserModelAuthorization getUser(String email) {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject("http://localhost:8080/api/authorize/getUser?email=" + email, UserModelAuthorization.class);
     }
 
     private Div createLoadingSpinner() {

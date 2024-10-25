@@ -1,4 +1,4 @@
-package org.example.sport_section.Views;
+package org.example.sport_section.front.Views.Authorize;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -9,10 +9,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Validators.UserValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,9 +25,11 @@ import java.util.concurrent.Executors;
 @Route("register")
 public class RegisterPage extends VerticalLayout {
     private final Div loadingSpinner = createLoadingSpinner();
-    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final WebClient webClient;
 
-    public RegisterPage() {
+    @Autowired
+    public RegisterPage(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api").build();
         TextField emailField = new TextField("Email");
         TextField name = new TextField("Имя");
         TextField lastName = new TextField("Фамилия");
@@ -31,7 +38,7 @@ public class RegisterPage extends VerticalLayout {
         Button registerButton = new Button("Register", e -> register(lastName.getValue(),
                 name.getValue(), emailField.getValue(), passwordField.getValue(), phone.getValue()));
         add(emailField, name, lastName, phone, passwordField, registerButton);
-        UI.getCurrent().setPollInterval(500);
+        UI.getCurrent().setPollInterval(100);
     }
 
     private void register(String lastName, String firstName, String email, String password, String phone) {
@@ -42,12 +49,11 @@ public class RegisterPage extends VerticalLayout {
             return;
         }
         //получить пользователя
-        CompletableFuture.supplyAsync(() -> getUserWithEmail(email), executor)
-                .thenAcceptAsync(user -> {
+        webClient.get().uri("/authorize/getUser" + "?email=" + email).retrieve()
+                .bodyToMono(UserModelAuthorization.class).subscribe(user -> {
                     getUI().ifPresent(ui -> ui.access(() -> {
                         remove(loadingSpinner);
-                        if (user == null) {
-                            //захешировать текущий
+                        if (user.getEmail() == null) {
                             addUser(firstName, lastName, email, password, phone);
                             Notification.show("Успешно!", 3000, Notification.Position.MIDDLE);
                             toStartPage();
@@ -59,7 +65,7 @@ public class RegisterPage extends VerticalLayout {
                 });
     }
 
-    private String validate( String email, String phone) {
+    private String validate(String email, String phone) {
         try {
             UserValidator.validateEmail(email);
             UserValidator.validatePhone(phone);
@@ -70,27 +76,23 @@ public class RegisterPage extends VerticalLayout {
     }
 
     private void addUser(String firstName, String lastName, String email, String password, String phone) {
-        RestTemplate restTemplate = new RestTemplate();
-        String path = "http://localhost:8080/api/users/addUser";
-        String url = String.format(path + "?email=%s&firstName=%s&lastName=%s&phone=%s", email, firstName,
-                lastName, phone);
-        long userId = restTemplate.postForObject(url, null, Long.class);
-        //todo if userId null
-        addUserAuthorize(email, password, userId);
+        String path = "/users/addUser";
+        String url = String.format(path + "?email=%s&firstName=%s&lastName=%s&phone=%s", email, firstName, lastName, phone);
+        webClient.post().uri(url).retrieve()
+                .bodyToMono(Long.class).subscribe(userId -> {
+                    addUserAuthorize(email, password, userId);
+                });
     }
 
-    private UserModelAuthorization getUserWithEmail(String email) {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject("http://localhost:8080/api/authorize/getUser" + "?email=" +  email, UserModelAuthorization.class);
-    }
     private void toStartPage() {
         UI.getCurrent().navigate(StartPage.class);
     }
+
     private void addUserAuthorize(String email, String password, long userId) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8080/api/authorize/addUser" + "?email=" + email + "&password=" + password + "&userId=" + userId;
-        restTemplate.postForObject(url, null, void.class);
+        String url = "/authorize/addUser" + "?email=" + email + "&password=" + password + "&userId=" + userId;
+        webClient.post().uri(url).retrieve().bodyToMono(void.class).subscribe();
     }
+
     private Div createLoadingSpinner() {
         Div spinner = new Div();
         spinner.add(new Span("Loading..."));

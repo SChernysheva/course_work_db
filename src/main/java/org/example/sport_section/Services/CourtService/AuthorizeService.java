@@ -1,16 +1,12 @@
 package org.example.sport_section.Services.CourtService;
 
-import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.UserModelAuthorization;
-import org.example.sport_section.Reposiroties.AuthorizeRepository;
-import org.example.sport_section.Reposiroties.CourtRepository;
+import org.example.sport_section.Repositories.Authorize.AuthorizeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -23,20 +19,22 @@ public class AuthorizeService {
     }
 
     @Async
-    public CompletableFuture<String> getHashPasswordForEmail(String email) {
+    public CompletableFuture<String> getHashPasswordForEmailAsync(String email) {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.getHashPasswordForEmail(email));
     }
     @Async
-    public CompletableFuture<UserModelAuthorization> getUser(String email) {
+    public CompletableFuture<UserModelAuthorization> getUserAsync(String email) {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.getUser(email));
     }
 
-    public void saveEmail(String email, String password, long userId) {
+    @Async
+    public CompletableFuture<Void> saveEmailAsync(String email, String password, long userId) {
         authorizeRepository.saveEmail(email, password, userId);
+        return CompletableFuture.completedFuture(null);
     }
 
     @Async
-    public CompletableFuture<Boolean> isEmailExists(String email) {
+    public CompletableFuture<Boolean> isEmailExistsAsync(String email) {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.isEmailInDatabase(email));
     }
 

@@ -1,7 +1,6 @@
-package org.example.sport_section.Reposiroties;
+package org.example.sport_section.Repositories.Authorize;
 
 import org.example.sport_section.DataBase.DatabaseConfig;
-import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 @Component
 public class AuthorizeRepository {
@@ -53,11 +51,12 @@ public class AuthorizeRepository {
         try (PreparedStatement preparedStatement = databaseConfig.getConnection().prepareStatement(sql)) {
             preparedStatement.setString(1, email);
             ResultSet res = preparedStatement.executeQuery();
+            user = new UserModelAuthorization();
             if (res.next()) {
-                user = new UserModelAuthorization();
                 user.setEmail(email);
                 user.setHashPassword(res.getString("hash_password"));
             }
+            return user;
         } catch (SQLException e) {
             e.printStackTrace();
         }
