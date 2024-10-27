@@ -206,9 +206,17 @@ public class HomePage extends HorizontalLayout {
 
         // Добавляем кнопки для навигации
         Button trainersButton = new Button("Наши тренеры");
+        Button bookingButton = new Button("Мои бронирования");
         trainersButton.addClickListener(event ->
                 UI.getCurrent().navigate(HomePage.class));
         trainersButton.getStyle().set("background-color", "#FFFFFF")
+                .set("padding", "10px")
+                .set("border-radius", "8px")
+                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
+                .set("color", "black");
+        bookingButton.addClickListener(event ->
+                UI.getCurrent().navigate(HomePage.class));
+        bookingButton.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "10px")
                 .set("border-radius", "8px")
                 .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
@@ -226,6 +234,7 @@ public class HomePage extends HorizontalLayout {
         // Добавляем кнопки в сайдбар
         sidebar.add(trainersButton);
         sidebar.add(scheduleButton);
+        sidebar.add(bookingButton);
 
         return sidebar;
     }

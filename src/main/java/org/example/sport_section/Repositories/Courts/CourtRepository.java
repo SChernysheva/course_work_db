@@ -23,13 +23,11 @@ public class CourtRepository {
 
     public List<Court> getCourts() throws SQLException {
         List<Court> courts = new ArrayList<>();
-        try
-        {
+        try {
             Statement statement = databaseConfig.getConnection().createStatement();
             String SQL = "SELECT * FROM courts";
             ResultSet res = statement.executeQuery(SQL);
-            while (res.next())
-            {
+            while (res.next()) {
                 Court court = new Court();
                 court.setId(res.getInt("id"));
                 court.setNameCourt(res.getString("court_name"));
@@ -40,17 +38,16 @@ public class CourtRepository {
         }
         return courts;
     }
+
     public Court getCourtById(long id) {
         Court court = null;
-        try
-        {
+        try {
             String sql = "SELECT * FROM courts WHERE id = (?)";
             PreparedStatement statement = databaseConfig.getConnection().prepareStatement(sql);
             statement.setLong(1, id);
             ResultSet res = statement.executeQuery(sql);
             court = new Court();
-            if (res.next())
-            {
+            if (res.next()) {
                 court.setId(res.getInt("id"));
                 court.setNameCourt(res.getString("court_name"));
             }
@@ -59,28 +56,41 @@ public class CourtRepository {
         }
         return court;
     }
+
     public List<Integer> getBookingTimeForCourt(long id, LocalDate date) throws SQLException {
         List<Integer> list = new ArrayList<>();
-        String sql = "SELECT * FROM booking_courts WHERE id = (?) AND date = (?)";
+        String sql = "SELECT * FROM booking_courts WHERE court_id = (?) AND date = (?)";
         PreparedStatement statement = databaseConfig.getConnection().prepareStatement(sql);
         statement.setLong(1, id);
         statement.setDate(2, Date.valueOf(date)); // конвертация LocalDate в java.sql.Date
-        ResultSet res = statement.executeQuery(sql);
-        while (res.next())
-        {
+        ResultSet res = statement.executeQuery();
+        while (res.next()) {
             list.add(res.getInt("time"));
         }
         return list;
     }
-    public void addBookingTimeForCourt(long courtId, LocalDate date, int hour) throws SQLException {
-        String sql = "INSERT INTO TABLE booking_courts (court_id, date, hour) VALUES (?, ?, ?)";
-        try (PreparedStatement preparedStatement = databaseConfig.getConnection().prepareStatement(sql)) {
+
+    public Long addBookingTimeForCourt(long courtId, LocalDate date, int hour) throws SQLException {
+        try {
+            String sql = "INSERT INTO booking_courts (court_id, date, time) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement = databaseConfig.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setLong(1, courtId);
             preparedStatement.setDate(2, Date.valueOf(date)); // конвертация LocalDate в java.sql.Date
             preparedStatement.setInt(3, hour);
-            preparedStatement.executeQuery();
+            int affectedRows = preparedStatement.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getLong(1);
+                    }
+                }
+            } else {
+                throw new SQLException("No rows affected.");
+                //todo
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            //todo
         }
+        return null;
     }
 }

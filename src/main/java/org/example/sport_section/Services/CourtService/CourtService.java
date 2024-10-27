@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -48,10 +49,35 @@ public class CourtService {
         });
     }
 
+    // Пример на Java с использованием JPA
+    // Предполагается, что у вас есть сущность Reservation с полем timeSlot
+//
+//    @Transactional
+//    public void bookCourt(long courtId, LocalDate date, int hour) {
+//        // Проверьте, свободно ли время
+//        Optional<Reservation> existingReservation = reservationRepository.findByTimeSlot(timeSlot);
+//
+//        if (existingReservation.isPresent()) {
+//            throw new IllegalStateException("Время уже забронировано");
+//        }
+//
+//        // Если свободно, создайте новую запись бронирования
+//        Reservation reservation = new Reservation();
+//        reservation.setUserId(userId);
+//        reservation.setTimeSlot(timeSlot);
+//        reservationRepository.save(reservation);
+//    }
+
+
     @Async
-    public CompletableFuture<Void> addBookingTimeForCourt(long courtId, LocalDate date, int hour) throws SQLException {
-        courtRepository.addBookingTimeForCourt(courtId, date, hour);
-        return CompletableFuture.completedFuture(null);
+    public CompletableFuture<Long> addBookingTimeForCourt(long courtId, LocalDate date, int hour) throws SQLException {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return courtRepository.addBookingTimeForCourt(courtId, date, hour);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 }
