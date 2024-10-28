@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Validators.UserValidator;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,13 +52,14 @@ public class RegisterPage extends VerticalLayout {
         }
         //получить пользователя
         webClient.get().uri("/authorize/getUser" + "?email=" + email).retrieve()
-                .bodyToMono(UserModelAuthorization.class).subscribe(user -> {
+                .bodyToMono(Optional.class).subscribe(user -> {
                     getUI().ifPresent(ui -> ui.access(() -> {
                         remove(loadingSpinner);
-                        if (user.getEmail() == null) {
+                        if (user.isEmpty()) {
                             addUser(firstName, lastName, email, password, phone);
                             Notification.show("Успешно!", 3000, Notification.Position.MIDDLE);
-                            toStartPage();
+                            VaadinSession.getCurrent().close();
+                            //toStartPage();
                         } else {
                             // Неправильный email или пароль
                             Notification.show("Пользователь с такой почтой уже существует", 3000, Notification.Position.MIDDLE);
@@ -78,8 +81,10 @@ public class RegisterPage extends VerticalLayout {
     private void addUser(String firstName, String lastName, String email, String password, String phone) {
         String path = "/users/addUser";
         String url = String.format(path + "?email=%s&firstName=%s&lastName=%s&phone=%s", email, firstName, lastName, phone);
+        System.out.println(url);
         webClient.post().uri(url).retrieve()
-                .bodyToMono(Long.class).subscribe(userId -> {
+                .bodyToMono(Integer.class).subscribe(userId -> {
+                    System.out.println("addUserAsyncId" + userId);
                     addUserAuthorize(email, password, userId);
                 });
     }
@@ -90,7 +95,7 @@ public class RegisterPage extends VerticalLayout {
 
     private void addUserAuthorize(String email, String password, long userId) {
         String url = "/authorize/addUser" + "?email=" + email + "&password=" + password + "&userId=" + userId;
-        webClient.post().uri(url).retrieve().bodyToMono(void.class).subscribe();
+        webClient.post().uri(url).retrieve().bodyToMono(Void.class).subscribe();
     }
 
     private Div createLoadingSpinner() {

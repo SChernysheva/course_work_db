@@ -2,6 +2,7 @@ package org.example.sport_section.front.Views.Home;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
@@ -13,37 +14,34 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
-import org.example.sport_section.Utils.SecurityUtils;
+import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Authorize.StartPage;
-import org.example.sport_section.front.Views.CourtPageInfo;
+import org.example.sport_section.front.Views.Courts.CourtPageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
 import java.util.List;
 
-@Route("home")
+@Route("")
 public class HomePage extends HorizontalLayout {
+    private final CourtService courtService;
     private final String imageURL = "https://a-static.besthdwallpaper.com/tennis-ball-standing-on-clay-tennis-court-on-a-sunlit-day-wallpaper-5120x3200-88002_10.jpg";
     private FlexLayout cardLayout = new FlexLayout();
     private final Div loadingSpinner = createLoadingSpinner();
-    private final WebClient webClient;
 
     @Autowired
-    public HomePage(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api").build();
+    public HomePage(CourtService courtService) throws InterruptedException {
+        this.courtService = courtService;
         setSizeFull();
         setSpacing(false);
         add(loadingSpinner);
-        webClient.get().uri("/courts").retrieve().bodyToMono(Court[].class).subscribe(courts -> {
-            List<Court> courtList = Arrays.asList(courts);
-            getUI().ifPresent(ui -> ui.access(() -> {
-                remove(loadingSpinner);
-                loadContent(courtList);
-            }));
+        String userEmail = SecurityUtils.getCurrentUserEmail();
+        System.out.println("email in home page" + userEmail);
+        List<Court> courts = courtService.getCourtsAsync().join();
+        UI.getCurrent().access(() -> {
+            remove(loadingSpinner);
+            loadContent(courts, userEmail);
         });
-        UI.getCurrent().setPollInterval(500);
     }
 
     private Button getExitButton() {
@@ -60,12 +58,8 @@ public class HomePage extends HorizontalLayout {
         });
         return exitButton;
     }
-    private VerticalLayout createSidebarViewUser() {
+    private VerticalLayout createSidebarViewUser(String userEmail) {
         VerticalLayout sidebar = new VerticalLayout();
-
-        // Получение информации о текущем пользователе в сессии
-        String userEmail = (String) VaadinSession.getCurrent().getAttribute("email");
-
         // Создание контейнера с информацией о пользователе
         Div userContainer = new Div();
         userContainer.getStyle().set("background-color", "lightgray");
@@ -83,10 +77,38 @@ public class HomePage extends HorizontalLayout {
         return sidebar;
     }
     private void exit() {
-        UI.getCurrent().navigate(StartPage.class);
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Вы точно хотите выйти?");
+        Button proveButton = new Button("Выйти");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            SecurityUtils.deleteAuth();
+            VaadinSession.getCurrent().close(); // Закройте текущую сессию
+            // UI.getCurrent().navigate(StartPage.class);
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            // Можем (необязательно) добавить логику возврата на домашнюю страницу
+            UI.getCurrent().navigate(HomePage.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
     }
 
-    private void loadContent(List<Court> courts) {
+    private void loadContent(List<Court> courts, String userEmail) {
         // Создаем и добавляем боковую панель
         VerticalLayout sidebar = createSidebarView();
         Div imageContainer = addImageContainer();
@@ -102,7 +124,7 @@ public class HomePage extends HorizontalLayout {
         cardLayout.setAlignItems(Alignment.CENTER); // Центруем по горизонтали
         overlay.add(cardLayout);
         imageContainer.add(overlay);
-        sidebar.add(createSidebarViewUser());
+        sidebar.add(createSidebarViewUser(userEmail));
         sidebar.add(getExitButton());
         add(sidebar);
         add(imageContainer);
@@ -167,7 +189,7 @@ public class HomePage extends HorizontalLayout {
 
     private Div createCourtCard(Court court) {
         Div div = new Div();
-        Button card = new Button(court.getNameCourt());
+        Button card = new Button(court.getCourtName());
         card.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "10px")
                 .set("border-radius", "8px")
@@ -238,4 +260,5 @@ public class HomePage extends HorizontalLayout {
 
         return sidebar;
     }
+
 }

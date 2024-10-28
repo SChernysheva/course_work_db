@@ -17,9 +17,15 @@ public class UserController {
         this.userService = userService;
     }
     @PostMapping("/addUser")
-    public Long addUser(@RequestParam String email, @RequestParam String firstName, @RequestParam String lastName,
-                        @RequestParam String phone) throws SQLException {
+    public Integer addUser(@RequestParam String email, @RequestParam String firstName, @RequestParam String lastName,
+                        @RequestParam String phone) {
+        System.out.println("controller user");
         User user = new User(firstName, lastName, email, phone);
         return userService.addUserAsync(user).join();
+    }
+
+    @GetMapping("/getUser")
+    public User getUser(@RequestParam String email) {
+        return userService.getUserAsync(email).join();
     }
 }

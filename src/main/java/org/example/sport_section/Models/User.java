@@ -1,6 +1,13 @@
 package org.example.sport_section.Models;
 
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String first_name;
     private String last_name;

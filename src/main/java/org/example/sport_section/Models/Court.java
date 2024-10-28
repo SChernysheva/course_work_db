@@ -1,12 +1,19 @@
 package org.example.sport_section.Models;
 
-public class Court {
-    private int id;
-    private String nameCourt;
 
-    public Court(int id, String nameCourt) {
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "courts")
+public class Court {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String courtName;
+
+    public Court(int id, String courtName) {
         this.id = id;
-        this.nameCourt = nameCourt;
+        this.courtName = courtName;
     }
 
     public Court() {
@@ -21,11 +28,11 @@ public class Court {
         this.id = id;
     }
 
-    public String getNameCourt() {
-        return nameCourt;
+    public String getCourtName() {
+        return courtName;
     }
 
-    public void setNameCourt(String nameCourt) {
-        this.nameCourt = nameCourt;
+    public void setCourtName(String courtName) {
+        this.courtName = courtName;
     }
 }

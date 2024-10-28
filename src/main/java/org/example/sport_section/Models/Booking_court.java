@@ -1,21 +1,40 @@
 package org.example.sport_section.Models;
 
+import jakarta.persistence.*;
+
 import java.sql.Date;
 import java.sql.Time;
 
+
+@Entity
+@Table(name = "booking_courts")
 public class Booking_court {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+
     private int court_id;
     private int user_id;
-    private int id;
     private Date date;
-    private Time time;
+    private int time;
 
-    public Booking_court(int court_id, int user_id, int id, Date date, Time time) {
+    public Booking_court(int court_id, int user_id, Date date, int time) {
+        this.court_id = court_id;
+        this.user_id = user_id;
+        this.date = date;
+        this.time = time;
+    }
+    public Booking_court(int court_id, int user_id, int id, Date date, int time) {
         this.court_id = court_id;
         this.user_id = user_id;
         this.id = id;
         this.date = date;
         this.time = time;
+    }
+
+    public Booking_court() {
+
     }
 
     public int getCourt_id() {
@@ -34,7 +53,7 @@ public class Booking_court {
         this.user_id = user_id;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -50,11 +69,11 @@ public class Booking_court {
         this.date = date;
     }
 
-    public Time getTime() {
+    public int getTime() {
         return time;
     }
 
-    public void setTime(Time time) {
+    public void setTime(int time) {
         this.time = time;
     }
 }

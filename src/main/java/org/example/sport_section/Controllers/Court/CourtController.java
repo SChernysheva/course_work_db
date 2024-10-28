@@ -2,30 +2,32 @@ package org.example.sport_section.Controllers.Court;
 
 
 import org.example.sport_section.Models.Court;
+import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.CourtService.CourtService;
-import org.example.sport_section.Utils.SecurityUtils;
+import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/courts")
 public class CourtController {
     private final CourtService courtService;
+    private final BookingCourtService bookingCourtService;
 
     @Autowired
-    public CourtController(CourtService courtService) {
+    public CourtController(CourtService courtService, BookingCourtService bookingCourtService) {
         this.courtService = courtService;
+        this.bookingCourtService = bookingCourtService;
     }
     @GetMapping
-    public List<Court> getAllCourts() {
+    public List<Court> getAllCourts() throws InterruptedException {
+        System.out.println("controller getAllCourts");
         return courtService.getCourtsAsync().join();
     }
 //    @GetMapping("/")
@@ -36,13 +38,8 @@ public class CourtController {
     @GetMapping("/getBooking")
     public List<Integer> getBookingTimeForCourt(@RequestParam long id, @RequestParam LocalDate date) {
         System.out.println("getBookingTimeForCourt");
-        return courtService.getBookingTimeForCourtAsync(id, date).join();
+        return bookingCourtService.getBookingTimeForCourtAsync(id, date).join();
     }
-//
-//    @GetMapping("/isBooking")
-//    public Boolean isBookingTimeForCourt(@RequestParam long id, @RequestParam LocalDate date, @RequestParam int hour) {
-//        return courtService.isBookingTimeForCourt(id, date, hour).join();
-//    }
 
     @GetMapping("/getAvailableTime")
     public List<Integer> getAviableTimeForCourt(@RequestParam long id, @RequestParam LocalDate date) {
@@ -55,7 +52,7 @@ public class CourtController {
             LocalTime currentTime = LocalTime.now();
             startHour = currentTime.getHour() + 1;
         }
-        List<Integer> bookingHours = courtService.getBookingTimeForCourtAsync(id, date).join();
+        List<Integer> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(id, date).join();
         for (int i = startHour; i <= 22; i++) {
             if (!bookingHours.contains(i)) {
                 availableHours.add(i);
@@ -65,9 +62,10 @@ public class CourtController {
     }
 
     @PostMapping("/addBooking")
-    public Long addBookingTimeForCourt(@RequestParam long courtId, @RequestParam LocalDate date,
-                                       @RequestParam int hour) throws SQLException {
-        return courtService.addBookingTimeForCourt(courtId, date, hour).join();
+    public Long addBookingTimeForCourt(@RequestParam int courtId, @RequestParam LocalDate date,
+                                       @RequestParam int hour, @RequestParam int id) throws SQLException {
+        System.out.println("addBookingTimeForCourt" + SecurityUtils.getCurrentUserEmail());
+        return bookingCourtService.addBookingTimeForCourt(courtId, date, hour, id).join();
     }
 }
 

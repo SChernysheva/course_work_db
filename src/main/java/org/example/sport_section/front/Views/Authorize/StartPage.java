@@ -8,27 +8,25 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.UserModelAuthorization;
-import org.example.sport_section.Utils.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.web.reactive.function.client.WebClient;
 
-@Route("")
-public class StartPage extends VerticalLayout implements BeforeEnterObserver {
+@Route("loginPage")
+public class StartPage extends VerticalLayout{
     private final Div loadingSpinner = createLoadingSpinner();
-    private final WebClient webClient;
-
     @Autowired
-    public StartPage(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8080/api").build();
-        setClassName("login-layout");
+    private AuthenticationManager authenticationManager;
+
+
+    public StartPage() {
+        System.out.println("constructor");
+        setClassName("login");
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
@@ -44,14 +42,6 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
 
         // Добавляем элементы на страницу
         add(usernameField, passwordField, loginButton, registerButton);
-        UI.getCurrent().setPollInterval(500);
-    }
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        if (SecurityUtils.getCurrentUserEmail() != null) {
-            // Пользователь уже аутентифицирован
-            event.forwardTo(HomePage.class);
-        }
     }
 
     private void applyStyles(TextField usernameField, PasswordField passwordField, Button loginButton, Button registerButton) {
@@ -68,41 +58,24 @@ public class StartPage extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void login(String email, String password) {
-        add(loadingSpinner);
-        webClient.get().uri("/authorize/getUser?email=" + email).retrieve().bodyToMono(UserModelAuthorization.class)
-                .subscribe(user -> {
-                    getUI().ifPresent(ui -> ui.access(() -> {
-                remove(loadingSpinner);
-                if (user.getEmail() != null) {
-                    // сравнить пароли
-                    validatePasswords(password, email);
-                } else {
-                    // Неправильный email или пароль
-                    Notification.show("Неверный email или пароль!", 3000, Notification.Position.MIDDLE);
-                }
-            }));
-        });
+        if (authenticate(email, password)) {
+            Notification.show("Успешный вход для " + email);
+            toHomePage();
+        } else {
+            Notification.show("Неверный email или пароль!", 3000, Notification.Position.MIDDLE);
+        }
     }
+    private boolean authenticate(String username, String password) {
+        try {
+            Authentication token = new UsernamePasswordAuthenticationToken(username, password);
+            Authentication authentication = authenticationManager.authenticate(token);
 
-    private void validatePasswords(String hashPasswordUser, String email) {
-        webClient.get().uri("/authorize/getHashPassword?email=" + email).retrieve().bodyToMono(String.class)
-                .subscribe(expectedPassword -> {
-                    getUI().ifPresent(ui -> ui.access(() -> {
-                        if (checkPasswords(hashPasswordUser, expectedPassword)) {
-                            // Аутентификация успешна
-                            Notification.show("Успешный вход для " + email);
-                            SecurityUtils.saveUserInCurrentSession(email, hashPasswordUser);
-                            VaadinSession.getCurrent().setAttribute("email", email);
-                            toHomePage();
-                        } else {
-                            Notification.show("Неверный пароль!", 3000, Notification.Position.MIDDLE);
-                        }
-                    }));
-                });
-    }
-
-    private boolean checkPasswords(String passwordProvided, String passwordExpected) {
-        return BCrypt.checkpw(passwordProvided, passwordExpected);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return true;
+        } catch (AuthenticationException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private void register() {

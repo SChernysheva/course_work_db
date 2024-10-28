@@ -1,6 +1,13 @@
 package org.example.sport_section.Models;
 
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "groups")
 public class Group {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
     private int coach_id;
@@ -9,6 +16,10 @@ public class Group {
         this.id = id;
         this.name = name;
         this.coach_id = coach_id;
+    }
+
+    public Group() {
+
     }
 
     public int getId() {

@@ -1,8 +1,17 @@
 package org.example.sport_section.Models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 import java.sql.Time;
 
+
+@Entity
 public class Schedule {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private int court_id;
     private String day_week;
@@ -15,6 +24,10 @@ public class Schedule {
         this.day_week = day_week;
         this.time = time;
         this.group_id = group_id;
+    }
+
+    public Schedule() {
+
     }
 
     public int getId() {
