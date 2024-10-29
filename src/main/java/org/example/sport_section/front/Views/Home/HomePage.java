@@ -14,13 +14,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
-import org.example.sport_section.Repositories.Images.ImageRepository;
 import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.ImageService;
 import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 //import org.example.sport_section.front.Views.Authorize.StartPage;
-import org.example.sport_section.front.Views.Courts.CourtPageInfo;
+import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -187,8 +186,8 @@ public class HomePage extends HorizontalLayout {
     }
 
     public void goToCourtInfo(Court court) {
-        VaadinSession.getCurrent().setAttribute("court", court);
-        UI.getCurrent().navigate(CourtPageInfo.class);
+        System.out.println(court.getId());
+        UI.getCurrent().navigate("/courts/info/" + court.getId());
     }
 
     private Div createCourtCard(Court court) {
@@ -241,7 +240,7 @@ public class HomePage extends HorizontalLayout {
                 .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
                 .set("color", "black");
         bookingButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
+                UI.getCurrent().navigate(Bookings.class));
         bookingButton.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "10px")
                 .set("border-radius", "8px")
@@ -256,8 +255,17 @@ public class HomePage extends HorizontalLayout {
                 .set("border-radius", "8px")
                 .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
                 .set("color", "black");
+        Button bookButton = new Button("Забронировать корт");
+        bookButton.addClickListener(event ->
+                UI.getCurrent().navigate(HomePage.class));
+        bookButton.getStyle().set("background-color", "#E8E8E8")
+                .set("padding", "10px")
+                .set("border-radius", "8px")
+                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
+                .set("color", "black");
 
         // Добавляем кнопки в сайдбар
+        sidebar.add(bookButton);
         sidebar.add(trainersButton);
         sidebar.add(scheduleButton);
         sidebar.add(bookingButton);

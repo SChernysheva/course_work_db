@@ -12,12 +12,17 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import org.example.sport_section.Models.Booking_court;
 import org.example.sport_section.Models.Court;
 import org.example.sport_section.Models.CourtImage;
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
+import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.ImageService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.ImageHelper;
@@ -25,27 +30,37 @@ import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-@Route("courts/info/")
-public class CourtPageInfo extends HorizontalLayout {
+@Route("courts/info")
+public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<String> {
     private final Div loadingSpinner = createLoadingSpinner();
-    private final BookingCourtService courtService;
+    private final CourtService courtService;
     private final UserService userService;
     private final BookingCourtService bookingCourtService;
     private final ImageService imageService;
+    private int courtId;
 
     @Autowired
-    public CourtPageInfo(BookingCourtService courtService, UserService userService,
+    public CourtPageInfo(CourtService courtService, UserService userService,
                          BookingCourtService bookingCourtService, ImageService imageService) {
         this.imageService = imageService;
         this.courtService = courtService;
         this.userService = userService;
         this.bookingCourtService = bookingCourtService;
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        if (parameter != null) {
+            this.courtId = Integer.parseInt(parameter);
+        }
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         setSizeFull();
@@ -55,9 +70,9 @@ public class CourtPageInfo extends HorizontalLayout {
         mainDiv.setJustifyContentMode(JustifyContentMode.CENTER);
         mainDiv.setAlignItems(Alignment.CENTER);
         add(loadingSpinner);
-        Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
+        //Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
         String email = SecurityUtils.getCurrentUserEmail();
-        Div div = getDiv(currentCourt.getId(), email);
+        Div div = getDiv(courtId, email);
         Div mainContent = getVerticalMainContent();
         mainDiv.add(div, mainContent);
         mainDiv.setHeight("850px");
@@ -71,8 +86,8 @@ public class CourtPageInfo extends HorizontalLayout {
     public Div getVerticalMainContent() {
         Div res = new Div();
         VerticalLayout vl = new VerticalLayout();
-        Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
-        Image courtImage = getImageForCourt(currentCourt.getId());
+        //Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
+        Image courtImage = getImageForCourt(courtId);
         courtImage.getElement().getStyle().set("border-radius", "15px");
         courtImage.getElement().getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
 //        courtImage.getElement().getStyle().set("width", "100%");
@@ -151,12 +166,17 @@ public class CourtPageInfo extends HorizontalLayout {
                             User user = getUser(email);
                             try {
                                 bookCourt(selectedDate[0], selectedHour[0], courtId, user.getId());
+                                Notification.show("Бронирование успешно создано!",  3000, Notification.Position.MIDDLE);
+                                UI.getCurrent().navigate(HomePage.class);
+                                timeDialog.close();
+                            } catch (IllegalStateException e) {
+                                UI.getCurrent().access(() -> {
+                                    Notification.show("Корт уже забронирован на это время.",  3000, Notification.Position.MIDDLE);
+                                    timeDialog.close();
+                                });
                             } catch (SQLException e) {
                                 //todo
                             }
-                            Notification.show("Бронирование успешно создано!",  3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().navigate(HomePage.class);
-                            timeDialog.close();
                         }
                     });
                     Button cancelButton = new Button("Отмена", bookEvent -> {
@@ -181,7 +201,7 @@ public class CourtPageInfo extends HorizontalLayout {
         int startHour = 7;
         if (date.isEqual(LocalDate.now())) {
             LocalTime currentTime = LocalTime.now();
-            startHour = currentTime.getHour() + 1;
+            startHour = Math.max(7, currentTime.getHour() + 1);
         }
         List<Integer> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
         for (int i = startHour; i <= 22; i++) {
@@ -193,8 +213,13 @@ public class CourtPageInfo extends HorizontalLayout {
 
     }
 
-    private void bookCourt(LocalDate date, int hour, int courtId, int id) throws SQLException {
-        courtService.addBookingTimeForCourt(courtId, date, hour, id).join();
+    private Long bookCourt(LocalDate date, int hour, int courtId, int id) throws SQLException {
+        Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
+        if (court.isPresent()) {
+            Booking_court bk = new Booking_court(court.get(), id, Date.valueOf(date), hour);
+            return bookingCourtService.addBookingTimeForCourt(bk).join();
+        }
+        throw new SQLException();
     }
 
     private User getUser(String email) {

@@ -2,9 +2,11 @@ package org.example.sport_section.Services.CourtService;
 
 import org.example.sport_section.Models.Booking_court;
 import org.example.sport_section.Repositories.BookingCourts.IBookingCourtsRepository;
+import org.example.sport_section.DTO.BookingDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -26,6 +28,15 @@ public class BookingCourtService {
     public CompletableFuture<List<Integer>> getBookingTimeForCourtAsync(long id, LocalDate date) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date)));
     }
+    @Async
+    public CompletableFuture<List<Booking_court>> getBookingsForUserAsync(long userId) {
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByUserId(userId));
+    }
+
+    @Async
+    public CompletableFuture<List<BookingDTO>> getBookingViewsForUserAsync(long userId) {
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingViewsByUserId(userId));
+    }
 
     // Пример на Java с использованием JPA
     // Предполагается, что у вас есть сущность Reservation с полем timeSlot
@@ -46,11 +57,30 @@ public class BookingCourtService {
 //        reservationRepository.save(reservation);
 //    }
 
+    @Transactional
+    public CompletableFuture<Booking_court> findBookingAsync(Long courtId, int time, LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByCourtIdAndBookingTime(courtId, Date.valueOf(date), time));
+    }
 
+    @Transactional
+    protected Long addBookingTimeForCourtTransactional(Booking_court bk) throws SQLException {
+
+        Booking_court existingBooking = bookingCourtsRepository.findByCourtIdAndBookingTime(bk.getCourt().getId(), bk.getDate(), bk.getTime());
+        if (existingBooking != null) {
+            return null;
+            //throw new IllegalStateException("Корт уже забронирован на это время.");
+        }
+        return bookingCourtsRepository.save(bk).getId();
+    }
+    @Transactional
     @Async
-    public CompletableFuture<Long> addBookingTimeForCourt(int courtId, LocalDate date, int hour, int userId) throws SQLException {
+    public CompletableFuture<Long> addBookingTimeForCourt(Booking_court bk) throws SQLException {
+        Booking_court existingBooking = bookingCourtsRepository.findByCourtIdAndBookingTime(bk.getCourt().getId(), bk.getDate(), bk.getTime());
+        if (existingBooking != null) {
+            //return null;
+            throw new IllegalStateException("Корт уже забронирован на это время.");
+        }
         return CompletableFuture.supplyAsync(() -> {
-            Booking_court bk = new Booking_court(courtId, userId, Date.valueOf(date), hour);
             return bookingCourtsRepository.save(bk).getId();
         });
     }

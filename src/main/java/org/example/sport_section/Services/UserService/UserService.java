@@ -1,8 +1,10 @@
 package org.example.sport_section.Services.UserService;
 
 
+import org.example.sport_section.Models.Admin;
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Models.UserModelAuthorization;
+import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class UserService {
     private IUserRepository userRepository;
+    private IAdminRepository adminRepository;
     @Autowired
     public UserService(IUserRepository userRepository) {
         this.userRepository = userRepository;
@@ -49,6 +52,10 @@ public class UserService {
         return CompletableFuture.supplyAsync(() -> userRepository.findById(id));
     }
 
+    @Async
+    public CompletableFuture<Admin> getAdminByUserIdAsync(int userId) {
+        return CompletableFuture.supplyAsync(() -> adminRepository.getAdmin(userId));
+    }
 
 
 }

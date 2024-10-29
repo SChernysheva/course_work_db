@@ -1,7 +1,10 @@
 package org.example.sport_section.Utils.Security;
 
+import org.example.sport_section.Models.Admin;
 import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Repositories.Authorize.IAuthorizeRepository;
+import org.example.sport_section.Repositories.User.IAdminRepository;
+import org.example.sport_section.Repositories.User.IUserRepository;
 import org.example.sport_section.Utils.JWT.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 @Configuration
 @EnableWebSecurity
@@ -45,16 +50,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(IAuthorizeRepository authorizeRepository) {
+    public UserDetailsService userDetailsService(IAuthorizeRepository authorizeRepository,
+                                                 IUserRepository userRepository, IAdminRepository adminRepository) {
         return email -> {
             Optional<UserModelAuthorization> userEntity = authorizeRepository.getByEmail(email);
             if (userEntity.isEmpty()) {
                 throw new UsernameNotFoundException("User not found");
             }
-            return User.withUsername(userEntity.get().getEmail())
-                    .password(userEntity.get().getHashPassword())
-                    .roles("USER") // Добавьте роли, если необходимо
-                    .build();
+            org.example.sport_section.Models.User user = userRepository.findByEmail(email);
+            Admin admin = adminRepository.getAdmin(user.getId());
+            User.UserBuilder resUser = User.withUsername(userEntity.get().getEmail())
+                    .password(userEntity.get().getHashPassword());
+            return (admin != null) ? resUser.roles("USER", "ADMIN").build() : resUser.roles("USER").build();
         };
     }
 
