@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .registration-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+      position: relative; /* Для позиционирования индикатора загрузки */
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Индикатор загрузки */
+    .loader {
+      display: none; /* Скрыть по умолчанию */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 5px solid rgba(0, 0, 0, 0.1);
+      border-top: 5px solid #007bff;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Стили для уведомления */
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none; /* Скрыт по умолчанию */
+      z-index: 1000; /* Чтобы быть поверх других элементов */
+    }
+  </style>
+</head>
+<body>
+<div class="notification" id="notification"></div> <!-- Уведомление -->
+<div class="registration-container">
+  <h2>Регистрация</h2>
+  <form id="registrationForm">
+    <div class="form-group">
+      <label for="email">Электронная почта:</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="firstName">Имя:</label>
+      <input type="text" id="firstName" name="firstName" required>
+    </div>
+    <div class="form-group">
+      <label for="lastName">Фамилия:</label>
+      <input type="text" id="lastName" name="lastName" required>
+    </div>
+    <div class="form-group">
+      <label for="phone">Телефон:</label>
+      <input type="tel" id="phone" name="phone" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Пароль:</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit">Зарегистрироваться</button>
+    <!-- Индикатор загрузки -->
+    <div class="loader" id="loader"></div>
+  </form>
+</div>
+<script>
+  document.getElementById('registrationForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+    const email = document.getElementById('email').value;
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const phone = document.getElementById('phone').value;
+
+    const password = document.getElementById('password').value;
+
+    // Находим индикатор загрузки
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block'; // Показываем индикатор загрузки
+
+    // Собираем параметры для запроса
+    const params = new URLSearchParams({
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone
+    });
+
+    // Выполняем запрос с параметрами в URL
+    const validationResponse = await fetch(`/api/users/validate?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    // Обрабатываем ответ
+    const validationString = await validationResponse.text(); // Ожидаем текстовый ответ
+
+
+    if (validationString !== 'ok') {
+      loader.style.display = 'none';
+      showNotification(validationString); // Выводим уведомление с ошибкой
+      //this.reset(); // Сбрасываем форму
+      return; // Завершаем обработку
+    }
+
+    // Отправляем запрос на добавление пользователя
+    const response = await fetch('/api/users/addUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone
+      })
+    });
+
+    if (response.ok) {
+      const userId = await response.json(); // Ожидаем ответа
+      // Теперь отправляем на авторизацию
+      await fetch('/api/authorize/addUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',  },
+        body: new URLSearchParams({
+          email: email,
+          password: password,
+          userId: userId // Передаем полученный ID
+        })
+      });
+      // Перенаправляем на страницу входа
+      window.location.href = '/login';
+    } else {
+      showNotification('Ошибка регистрации. Попробуйте еще раз.');
+    }
+
+    loader.style.display = 'none'; // Скрываем индикатор загрузки после второго запроса
+    // ... здесь вы можете обработать ответ на запрос добавления пользователя
+  });
+
+  function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message; // Устанавливаем сообщение
+    notification.style.display = 'block'; // Показываем уведомление
+
+    // Скрываем уведомление через 3 секунды
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 3000);
+  }
+</script>
+</body>
+</html>
+

@@ -63,10 +63,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("register").permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/register").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                       // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
-                        //.loginPage("/loginPage")
+                        .loginPage("/login")
                         .successHandler((request, response, authentication) -> {
                             // Перенаправление на нужный путь
                             response.sendRedirect("");

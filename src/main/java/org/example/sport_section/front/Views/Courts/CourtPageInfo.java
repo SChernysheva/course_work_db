@@ -4,8 +4,10 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -13,9 +15,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
+import org.example.sport_section.Models.CourtImage;
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
+import org.example.sport_section.Services.ImageService;
 import org.example.sport_section.Services.UserService.UserService;
+import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,35 +37,77 @@ public class CourtPageInfo extends HorizontalLayout {
     private final BookingCourtService courtService;
     private final UserService userService;
     private final BookingCourtService bookingCourtService;
+    private final ImageService imageService;
 
     @Autowired
-    public CourtPageInfo(BookingCourtService courtService, UserService userService, BookingCourtService bookingCourtService) {
-        System.out.println("court page");
+    public CourtPageInfo(BookingCourtService courtService, UserService userService,
+                         BookingCourtService bookingCourtService, ImageService imageService) {
+        this.imageService = imageService;
         this.courtService = courtService;
         this.userService = userService;
-        setSizeFull();
-        //setSpacing(false);
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        this.bookingCourtService = bookingCourtService;
         setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
+        setSizeFull();
+        getStyle().set("background-color", "#CFCFCF");
+        HorizontalLayout mainDiv = new HorizontalLayout();
+        mainDiv.getStyle().set("background-color", "#E6E6E6");
+        mainDiv.setJustifyContentMode(JustifyContentMode.CENTER);
+        mainDiv.setAlignItems(Alignment.CENTER);
         add(loadingSpinner);
-        Text text = new Text("Выберите удобную дату и время");
         Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
         String email = SecurityUtils.getCurrentUserEmail();
-        System.out.println("email court: " + email);
         Div div = getDiv(currentCourt.getId(), email);
-        remove(loadingSpinner);
-        add(text, div);
-        this.bookingCourtService = bookingCourtService;
+        Div mainContent = getVerticalMainContent();
+        mainDiv.add(div, mainContent);
+        mainDiv.setHeight("850px");
+        mainDiv.setWidth("1200px");
+        mainDiv.setPadding(true);
+        mainDiv.getStyle().set("border-radius", "15px");
+        mainDiv.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
+        add(mainDiv);
     }
+
+    public Div getVerticalMainContent() {
+        Div res = new Div();
+        VerticalLayout vl = new VerticalLayout();
+        Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
+        Image courtImage = getImageForCourt(currentCourt.getId());
+        courtImage.getElement().getStyle().set("border-radius", "15px");
+        courtImage.getElement().getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
+//        courtImage.getElement().getStyle().set("width", "100%");
+//        courtImage.getElement().getStyle().set("height", "auto");
+        courtImage.setWidth("700px");
+        courtImage.setHeight("700px");
+        remove(loadingSpinner);
+        Text textTitle = new Text("Аренда корта");
+        Div titleContainer = new Div(textTitle);
+        titleContainer.getStyle()
+                .set("font-size", "24px")
+                .set("font-weight", "bold")
+                .set("text-decoration", "underline")
+                .set("font-family", "Arial, sans-serif")
+                .set("margin-bottom", "20px");
+        vl.add(titleContainer, courtImage);
+        res.add(vl);
+        return res;
+    }
+
     public Div getDiv(int courtId, String email) {
         Div div = new Div();
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.setAlignItems(Alignment.CENTER);
+        horizontalLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        Text text = new Text("Выберите удобную дату и время");
         DatePicker datePicker = getDatePicker(courtId, email);
-        div.add(datePicker);
+        horizontalLayout.add(text, datePicker);
+        div.add(horizontalLayout);
         return div;
     }
 
     public DatePicker getDatePicker(int courtId, String email) {
         DatePicker datePicker = new DatePicker();
+        datePicker.open();
         Dialog timeDialog = new Dialog();
         VerticalLayout timeLayout = new VerticalLayout();
         timeDialog.add(timeLayout);
@@ -166,5 +213,10 @@ public class CourtPageInfo extends HorizontalLayout {
         spinner.getStyle().set("font-size", "24px");
         spinner.getStyle().set("font-weight", "bold");
         return spinner;
+    }
+    private Image getImageForCourt(int courtId) {
+        CourtImage imageData = imageService.getImageByCourtId(courtId).join();
+        Image image = ImageHelper.createImageFromByteArray(imageData.getImage_data(), "описание");
+        return image;
     }
 }

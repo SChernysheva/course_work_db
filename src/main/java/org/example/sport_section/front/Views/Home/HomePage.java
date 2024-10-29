@@ -14,9 +14,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
+import org.example.sport_section.Repositories.Images.ImageRepository;
 import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Services.ImageService;
+import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.Authorize.StartPage;
+//import org.example.sport_section.front.Views.Authorize.StartPage;
 import org.example.sport_section.front.Views.Courts.CourtPageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,22 +28,24 @@ import java.util.List;
 @Route("")
 public class HomePage extends HorizontalLayout {
     private final CourtService courtService;
-    private final String imageURL = "https://a-static.besthdwallpaper.com/tennis-ball-standing-on-clay-tennis-court-on-a-sunlit-day-wallpaper-5120x3200-88002_10.jpg";
     private FlexLayout cardLayout = new FlexLayout();
     private final Div loadingSpinner = createLoadingSpinner();
+    private final ImageService imageService;
 
     @Autowired
-    public HomePage(CourtService courtService) throws InterruptedException {
+    public HomePage(CourtService courtService, ImageService imageService) throws InterruptedException {
+        this.imageService = imageService;
         this.courtService = courtService;
         setSizeFull();
         setSpacing(false);
         add(loadingSpinner);
         String userEmail = SecurityUtils.getCurrentUserEmail();
         System.out.println("email in home page" + userEmail);
+        Div imageContainer = addImageContainer();
         List<Court> courts = courtService.getCourtsAsync().join();
         UI.getCurrent().access(() -> {
             remove(loadingSpinner);
-            loadContent(courts, userEmail);
+            loadContent(courts, userEmail, imageContainer);
         });
     }
 
@@ -108,10 +113,9 @@ public class HomePage extends HorizontalLayout {
         dialog.open(); // Открываем диалоговое окно
     }
 
-    private void loadContent(List<Court> courts, String userEmail) {
+    private void loadContent(List<Court> courts, String userEmail, Div imageContainer) {
         // Создаем и добавляем боковую панель
         VerticalLayout sidebar = createSidebarView();
-        Div imageContainer = addImageContainer();
         Div overlay = getOverlay();
 
         cardLayout.setWidthFull();
@@ -167,8 +171,8 @@ public class HomePage extends HorizontalLayout {
                 .set("border-radius", "10px")
                 .set("overflow", "hidden");    // Обрезает выступающие части
         imageContainer.setSizeFull();
-
-        Image image = new Image(imageURL, "Описание изображения");
+        org.example.sport_section.Models.Image imageValue = imageService.getImageByPage("home").join();
+        Image image = ImageHelper.createImageFromByteArray(imageValue.getImage_data(), "Описание");
         image.setWidth("100%");
         image.setHeight("100%");
         image.getStyle().set("object-fit", "cover");  // Контролирует размер изображения

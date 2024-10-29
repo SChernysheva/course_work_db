@@ -16,10 +16,10 @@ public class AuthorizeController {
     public AuthorizeController(AuthorizeService authorizeService) {
         this.authorizeService = authorizeService;
     }
-    @GetMapping("/getHashPassword")
-    public String getHashPassword(@RequestParam String email) {
-        return authorizeService.getHashPasswordForEmailAsync(email).join();
-    }
+//    @GetMapping("/getHashPassword")
+//    public String getHashPassword(@RequestParam String email) {
+//        return authorizeService.getHashPasswordForEmailAsync(email).join();
+//    }
     @GetMapping("/getUser")
     public Optional<UserModelAuthorization> getUser(@RequestParam String email) {
         System.out.println("email " + email);
