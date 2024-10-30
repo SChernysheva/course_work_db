@@ -20,6 +20,17 @@ public class User {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private List<Booking_court> bookings;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Admin admin;
+
+    public Admin getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+
     public List<Booking_court> getBookings() {
         return bookings;
     }
@@ -28,8 +39,9 @@ public class User {
         this.bookings = bookings;
     }
 
-    public User(int id, String first_name, String last_name, String email, String phone, List<Booking_court> bookings) {
+    public User(int id, String first_name, String last_name, String email, String phone, List<Booking_court> bookings, Admin admin) {
         this.id = id;
+        this.admin = admin;
         this.bookings = bookings;
         this.first_name = first_name;
         this.last_name = last_name;

@@ -1,21 +1,23 @@
 package org.example.sport_section.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "admins")
 public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private int user_id;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public Admin(int id, int user_id) {
+    //private int user_id;
+
+    public Admin(int id, User user) {
         this.id = id;
-        this.user_id = user_id;
+        this.user = user;
     }
 
     public Admin() {
@@ -30,11 +32,11 @@ public class Admin {
         this.id = id;
     }
 
-    public int getUser_id() {
-        return user_id;
+    public User getUser_id() {
+        return user;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setUser_id(User user_id) {
+        this.user = user;
     }
 }

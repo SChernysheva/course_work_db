@@ -85,11 +85,10 @@ public class SecurityConfig {
                 throw new UsernameNotFoundException("User not found");
             }
             org.example.sport_section.Models.User user = userRepository.findByEmail(email);
-            Admin admin = adminRepository.getAdmin(user.getId());
 
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("USER"));
-            if (admin != null) {
+            if (user.getAdmin() != null) {
                 authorities.add(new SimpleGrantedAuthority("ADMIN"));
             }
 

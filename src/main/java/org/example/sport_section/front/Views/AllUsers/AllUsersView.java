@@ -6,19 +6,23 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
@@ -105,7 +109,7 @@ public class AllUsersView extends HorizontalLayout {
     private Button getExitButton() {
         Button exitButton = new Button("Выйти");
         exitButton.addClickListener(e -> {
-            // Обработка выхода пользователя
+            exit();
         });
         return exitButton;
     }
@@ -127,7 +131,7 @@ public class AllUsersView extends HorizontalLayout {
         cancelButton.addClickListener(event -> {
             dialog.close(); // Закрываем диалоговое окно
             // Можем (необязательно) добавить логику возврата на домашнюю страницу
-            UI.getCurrent().navigate(HomePage.class);
+            UI.getCurrent().navigate(AllUsersView.class);
         });
 
         VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
@@ -179,6 +183,18 @@ public class AllUsersView extends HorizontalLayout {
             goToUserInfo(user);
         });
         card.add(lastName, firstName, email, phone, infoButton);
+        if (user.getAdmin() == null) {
+            Button adminButton = new Button("Сделать администратором");
+            adminButton.addClickListener(e -> {
+                addAdmin(user);
+            });
+            card.add(adminButton);
+        } else {
+            Text text = new Text("Администратор");
+            //text.getStyle().set("color", "red");
+            card.add(text);
+        }
+
 
         return card;
     }
@@ -197,5 +213,48 @@ public class AllUsersView extends HorizontalLayout {
     }
     public void goToUserInfo(User user) {
         UI.getCurrent().navigate("admin/users/info/" + user.getId());
+    }
+    private void addAdmin(User user) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Сделать пользователя " + user.getFirst_name() + " администратором?");
+        Button proveButton = new Button("Да");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access( () -> {
+                Notification.show("Выполняется...", 1000, Notification.Position.MIDDLE);
+            });
+            try {
+                userService.addAdminAsync(user.getId()).join();
+                UI.getCurrent().access( () -> {
+                    Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access( () -> {
+                    Notification.show("Ошибка: пользователь уже администратор", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            }
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            // Можем (необязательно) добавить логику возврата на домашнюю страницу
+            UI.getCurrent().navigate(AllUsersView.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
     }
 }
