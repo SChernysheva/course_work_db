@@ -1,21 +1,13 @@
 package org.example.sport_section.Services.UserService;
 
 
-import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
-import org.example.sport_section.Models.Admin;
 import org.example.sport_section.Models.User;
-import org.example.sport_section.Models.UserModelAuthorization;
 import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -74,6 +66,11 @@ public class UserService {
                     }
                     return result;
                 });
+    }
+
+    @Async
+    public CompletableFuture<Integer> addUserIntoGroup(int userId, Integer groupId) {
+        return CompletableFuture.supplyAsync( () -> userRepository.addUserIntoGroup(groupId, userId));
     }
 
 }

@@ -3,23 +3,79 @@ package org.example.sport_section.Models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "groups")
 public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String name;
-    private int coach_id;
 
-    public Group(int id, String name, int coach_id) {
-        this.id = id;
-        this.name = name;
-        this.coach_id = coach_id;
+    @Column(name = "group_name")
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "coach_id", referencedColumnName = "id")
+    private Coach coach;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "group")
+    private List<Schedule> schedules;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "group")
+    private List<User> users;
+
+    @ManyToOne
+    @JoinColumn(name = "level_id")
+    private LevelGroup levelGroup;
+
+    @ManyToOne
+    @JoinColumn(name = "age_id")
+    private AgeGroup ageGroup;
+
+
+    public LevelGroup getLevelGroup() {
+        return levelGroup;
+    }
+
+    public void setLevelGroup(LevelGroup levelGroup) {
+        this.levelGroup = levelGroup;
+    }
+
+    public AgeGroup getAgeGroup() {
+        return ageGroup;
+    }
+
+    public void setAgeGroup(AgeGroup ageGroup) {
+        this.ageGroup = ageGroup;
     }
 
     public Group() {
 
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public List<Schedule> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<Schedule> schedules) {
+        this.schedules = schedules;
+    }
+
+    public Coach getCoach() {
+        return coach;
+    }
+
+    public void setCoach(Coach coach) {
+        this.coach = coach;
     }
 
     public int getId() {
@@ -38,11 +94,8 @@ public class Group {
         this.name = name;
     }
 
-    public int getCoach_id() {
-        return coach_id;
+    public String getAllInfo() {
+        return name + " " + ageGroup.getAgeGroup() + " " + levelGroup.getLevelGroup();
     }
 
-    public void setCoach_id(int coach_id) {
-        this.coach_id = coach_id;
-    }
 }

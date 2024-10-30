@@ -23,6 +23,21 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Admin admin;
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Coach coach;
+
+    public Coach getCoach() {
+        return coach;
+    }
+
+    public void setCoach(Coach coach) {
+        this.coach = coach;
+    }
+
     public Admin getAdmin() {
         return admin;
     }
@@ -37,6 +52,14 @@ public class User {
 
     public void setBookings(List<Booking_court> bookings) {
         this.bookings = bookings;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 
     public User(int id, String first_name, String last_name, String email, String phone, List<Booking_court> bookings, Admin admin) {

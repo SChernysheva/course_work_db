@@ -3,8 +3,11 @@ package org.example.sport_section.front.Views;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -12,25 +15,36 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Booking_court;
+import org.example.sport_section.Models.Court;
+import org.example.sport_section.Models.Group;
 import org.example.sport_section.Models.User;
+import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Services.GroupService.GroupService;
 import org.example.sport_section.Services.UserService.UserService;
+import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.AllUsers.AllUsersView;
+import org.example.sport_section.front.Views.Home.HomePage;
 import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Route("admin/users/info")
 public class UserInfoView extends VerticalLayout implements HasUrlParameter<Integer> {
     private int userId;
     private final UserService userService;
+    private final GroupService groupService;
     @Autowired
-    public UserInfoView(UserService userService) {
+    public UserInfoView(UserService userService, GroupService groupService) {
         this.userService = userService;
+        this.groupService = groupService;
     }
     @Override
     public void setParameter(BeforeEvent beforeEvent, Integer parameter) {
@@ -43,6 +57,7 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         if (userOpt.isEmpty()) {
             //todo
         }
+        List<Group> allGroups = groupService.getGroups().join();
         User user = userOpt.get();
         List<Booking_court> bookings = user.getBookings();
         Collections.sort(bookings, new Comparator<Booking_court>() {
@@ -61,6 +76,37 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         userInfoLayout.add(new Span("Фамилия: " + user.getLast_name()));
         userInfoLayout.add(new Span("Телефон: " + user.getPhone()));
         userInfoLayout.add(new Span("Почта: " + user.getEmail()));
+        userInfoLayout.add(new Span("Группа: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getAllInfo())));
+        userInfoLayout.add(new Span("Тренер в группе: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getCoach().getUser().getLast_name())));
+
+
+        ComboBox<Group> groupComboBox = (user.getGroup() == null) ? new ComboBox<>("Записать в группу") : new ComboBox<>("Перезаписать в группу");
+        groupComboBox.setItems(allGroups);
+        groupComboBox.setItemLabelGenerator(Group::getAllInfo);
+        userInfoLayout.add(groupComboBox);
+
+        Button ok = new Button("OK");
+        ok.addClickListener(e -> {
+            Group group = groupComboBox.getValue();
+            if (group == null) {
+                Notification.show("Выберите группу для (пере)записи", 1000, Notification.Position.MIDDLE);
+                return;
+            }
+            UI.getCurrent().access(() -> {
+                Notification.show("Выполняется", 1000, Notification.Position.MIDDLE);
+                userService.addUserIntoGroup(userId, group.getId()).join();
+                Notification.show("Успешно", 1000, Notification.Position.MIDDLE);
+                UI.getCurrent().getPage().reload();
+            });
+        });
+        userInfoLayout.add(ok);
+        if (user.getGroup() != null) {
+            Button deleteGroup = new Button("Выписать из группы");
+            deleteGroup.addClickListener(e -> {
+                confirm();
+            });
+            userInfoLayout.add(deleteGroup);
+        }
         userInfoLayout.addClassName("user-info");
         Button back = new Button("Назад");
         back.addClickListener(e -> {
@@ -127,5 +173,37 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         Text name = new Text(booking.getCourt().getCourtName());
         card.add(date, hour, name);
         return card;
+    }
+    private void confirm() {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Выписать пользователя из группы?");
+        Button proveButton = new Button("Выписать");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access(() -> {
+                Notification.show("Выполняется", 1000, Notification.Position.MIDDLE);
+                userService.addUserIntoGroup(userId, null).join();
+                Notification.show("Успешно", 1000, Notification.Position.MIDDLE);
+                UI.getCurrent().getPage().reload();
+            });
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
     }
 }

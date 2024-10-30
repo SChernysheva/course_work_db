@@ -1,9 +1,6 @@
 package org.example.sport_section.Models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.sql.Time;
 
@@ -13,17 +10,31 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int court_id;
     private String day_week;
     private Time time;
-    private int group_id;
 
-    public Schedule(int id, int court_id, String day_week, Time time, int group_id) {
-        this.id = id;
-        this.court_id = court_id;
-        this.day_week = day_week;
-        this.time = time;
-        this.group_id = group_id;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    @ManyToOne
+    @JoinColumn(name = "court_id")
+    private Court court;
+
+    public Court getCourt() {
+        return court;
+    }
+
+    public void setCourt(Court court) {
+        this.court = court;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 
     public Schedule() {
@@ -36,14 +47,6 @@ public class Schedule {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getCourt_id() {
-        return court_id;
-    }
-
-    public void setCourt_id(int court_id) {
-        this.court_id = court_id;
     }
 
     public String getDay_week() {
@@ -62,11 +65,4 @@ public class Schedule {
         this.time = time;
     }
 
-    public int getGroup_id() {
-        return group_id;
-    }
-
-    public void setGroup_id(int group_id) {
-        this.group_id = group_id;
-    }
 }

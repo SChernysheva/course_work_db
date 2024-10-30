@@ -2,30 +2,50 @@ package org.example.sport_section.Models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "coaches")
 public class Coach {
-    private int user_id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    public Coach(int user_id, int id) {
-        this.user_id = user_id;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "coach")
+    private List<Group> groups;
+
+    public Coach(User user, int id) {
+        this.user = user;
         this.id = id;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Coach() {
 
     }
 
-    public int getUser_id() {
-        return user_id;
+    public User getUser() {
+        return user;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setUser_id(User user) {
+        this.user = user;
     }
 
     public int getId() {

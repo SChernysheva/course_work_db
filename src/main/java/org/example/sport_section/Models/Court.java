@@ -13,8 +13,19 @@ public class Court {
     private int id;
     private String courtName;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "court")
+    private List<Schedule> schedules;
+
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "court")
     private List<Booking_court> bookings;
+
+    public List<Schedule> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<Schedule> schedules) {
+        this.schedules = schedules;
+    }
 
     public List<Booking_court> getBookings() {
         return bookings;
