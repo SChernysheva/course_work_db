@@ -178,8 +178,7 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
                             System.out.println("email: " + email);
                             User user = getUser(email);
                             try {
-
-                                bookCourt(selectedDate[0], selectedHour[0], courtId, user.getId());
+                                bookCourt(selectedDate[0], selectedHour[0], courtId, user);
                                 Notification.show("Бронирование успешно создано!",  3000, Notification.Position.MIDDLE);
                                 UI.getCurrent().navigate(HomePage.class);
                                 timeDialog.close();
@@ -227,10 +226,10 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
 
     }
 
-    private Long bookCourt(LocalDate date, int hour, int courtId, int id) throws SQLException {
+    private Integer bookCourt(LocalDate date, int hour, int courtId, User user) throws SQLException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {
-            Booking_court bk = new Booking_court(court.get(), id, Date.valueOf(date), hour);
+            Booking_court bk = new Booking_court(court.get(), user, Date.valueOf(date), hour);
             return bookingCourtService.addBookingTimeForCourt(bk).join();
         }
         throw new SQLException();

@@ -3,6 +3,8 @@ package org.example.sport_section.Models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "courts")
 public class Court {
@@ -11,8 +13,20 @@ public class Court {
     private int id;
     private String courtName;
 
-    public Court(int id, String courtName) {
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "court")
+    private List<Booking_court> bookings;
+
+    public List<Booking_court> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(List<Booking_court> bookings) {
+        this.bookings = bookings;
+    }
+
+    public Court(int id, String courtName, List<Booking_court> bookings) {
         this.id = id;
+        this.bookings = bookings;
         this.courtName = courtName;
     }
 

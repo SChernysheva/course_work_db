@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.DTO.BookingDTO;
+import org.example.sport_section.Models.Booking_court;
 import org.example.sport_section.Models.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
@@ -48,7 +49,7 @@ public class Bookings extends HorizontalLayout {
         getStyle().setHeight("auto");
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userService.getUserAsync(email).join();
-        List<BookingDTO> bookings = bookingCourtService.getBookingViewsForUserAsync(user.getId()).join();
+        List<Booking_court> bookings = bookingCourtService.getBookingsForUserAsync(user.getId()).join();
         UI.getCurrent().access(() -> {
             addSidebar();
             add(loadContent(bookings));
@@ -57,7 +58,7 @@ public class Bookings extends HorizontalLayout {
 
     }
 
-    private VerticalLayout loadContent(List<BookingDTO> bookings) {
+    private VerticalLayout loadContent(List<Booking_court> bookings) {
         VerticalLayout layout = new VerticalLayout();
         //layout.setAlignItems(Alignment.CENTER);
         //layout.setJustifyContentMode(JustifyContentMode.CENTER);
@@ -104,7 +105,7 @@ public class Bookings extends HorizontalLayout {
         return spinner;
     }
 
-    private HorizontalLayout createCourtCard(BookingDTO booking) {
+    private HorizontalLayout createCourtCard(Booking_court booking) {
         HorizontalLayout card = new HorizontalLayout();
         card.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "15px")
@@ -118,8 +119,8 @@ public class Bookings extends HorizontalLayout {
         card.setAlignItems(FlexComponent.Alignment.CENTER); // Центрируем элементы по вертикали
 
         Text date = new Text(booking.getDate().toString() + "  ");
-        Text hour = new Text(booking.getHour() + ":00  ");
-        Text number = new Text(booking.getCourtName());
+        Text hour = new Text(booking.getTime() + ":00  ");
+        Text number = new Text(booking.getCourt().getCourtName());
         card.add(date, hour, number);
 
         ZonedDateTime moscowTime = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
@@ -127,7 +128,7 @@ public class Bookings extends HorizontalLayout {
         int currentMoscowHour = moscowTime.getHour();
         Date currentMoscowDate = Date.from(moscowInstant);
         if (currentMoscowDate.before(booking.getDate()) ||
-                (currentMoscowDate.equals(booking.getDate()) && currentMoscowHour < booking.getHour())) {
+                (currentMoscowDate.equals(booking.getDate()) && currentMoscowHour < booking.getTime())) {
             Button cancelButtton = new Button("Отменить бронирование");
             cancelButtton.addClickListener(e -> {
                 cancelBooking(booking);
@@ -202,7 +203,7 @@ public class Bookings extends HorizontalLayout {
         dialog.setHeight("200px"); // Настройка высоты диалогового окна
         dialog.open(); // Открываем диалоговое окно
     }
-    private void cancelBooking(BookingDTO booking) {
+    private void cancelBooking(Booking_court booking) {
         // Создаём диалоговое окно
         Dialog dialog = new Dialog();
 
@@ -215,7 +216,7 @@ public class Bookings extends HorizontalLayout {
             UI.getCurrent().access(() -> {
                 Notification.show("Выполняется отмена бронирования", 1500, Notification.Position.MIDDLE);
             });
-            bookingCourtService.deleteBookingAsync(booking.getBookingId()).join();
+            bookingCourtService.deleteBookingAsync(booking.getId()).join();
             UI.getCurrent().access(() -> {
                 Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
                 dialog.close();

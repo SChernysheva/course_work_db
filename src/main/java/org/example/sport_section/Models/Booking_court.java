@@ -18,19 +18,22 @@ public class Booking_court {
     @JoinColumn(name = "court_id", referencedColumnName = "id")
     private Court court;
 
-    private int user_id;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
     private Date date;
     private int time;
 
-    public Booking_court(Court court, int user_id, Date date, int time) {
+    public Booking_court(Court court, User user, Date date, int time) {
         this.court = court;
-        this.user_id = user_id;
+        this.user = user;
         this.date = date;
         this.time = time;
     }
-    public Booking_court(Court court, int user_id, int id, Date date, int time) {
+    public Booking_court(Court court, User user, int id, Date date, int time) {
         this.court = court;
-        this.user_id = user_id;
+        this.user = user;
         this.id = id;
         this.date = date;
         this.time = time;
@@ -48,15 +51,15 @@ public class Booking_court {
         this.court = court;
     }
 
-    public int getUser_id() {
-        return user_id;
+    public User getUser() {
+        return user;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public void setUser_id(User user) {
+        this.user = user;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 

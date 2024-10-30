@@ -1,5 +1,6 @@
 package org.example.sport_section.Services.CourtService;
 
+import org.example.sport_section.DTO.BookingsForAdminDTO;
 import org.example.sport_section.Models.Booking_court;
 import org.example.sport_section.Repositories.BookingCourts.IBookingCourtsRepository;
 import org.example.sport_section.DTO.BookingDTO;
@@ -29,14 +30,14 @@ public class BookingCourtService {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date)));
     }
     @Async
+    public CompletableFuture<List<Booking_court>> getBookings() {
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findAll());
+    }
+    @Async
     public CompletableFuture<List<Booking_court>> getBookingsForUserAsync(long userId) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByUserId(userId));
     }
 
-    @Async
-    public CompletableFuture<List<BookingDTO>> getBookingViewsForUserAsync(long userId) {
-        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingViewsByUserId(userId));
-    }
 
     // Пример на Java с использованием JPA
     // Предполагается, что у вас есть сущность Reservation с полем timeSlot
@@ -64,7 +65,7 @@ public class BookingCourtService {
 
     @Transactional
     @Async
-    public CompletableFuture<Long> addBookingTimeForCourt(Booking_court bk) throws SQLException {
+    public CompletableFuture<Integer> addBookingTimeForCourt(Booking_court bk) throws SQLException {
         Booking_court existingBooking = bookingCourtsRepository.findByCourtIdAndBookingTime(bk.getCourt().getId(), bk.getDate(), bk.getTime());
         if (existingBooking != null) {
             //return null;
@@ -77,4 +78,5 @@ public class BookingCourtService {
     public CompletableFuture<Integer> deleteBookingAsync(int bookingId) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.deleteById(bookingId));
     }
+
 }

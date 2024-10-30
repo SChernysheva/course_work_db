@@ -4,6 +4,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.example.sport_section.Utils.Security.SecurityUtils;
+import org.example.sport_section.front.Views.AllUsers.AllUsersView;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.example.sport_section.front.Views.ManageBookings.ManageBookings;
 import org.example.sport_section.front.Views.UserBookings.Bookings;
@@ -85,6 +86,20 @@ public class Sidebar {
             if (page.equals(ManageBookings.class)) {
                 manageBookingsButton.getStyle().set("background-color", "#E8E8E8");
             }
+            Button allUsers = new Button("Все пользователи");
+            allUsers.addClickListener(event ->
+                    ui.navigate(AllUsersView.class)); // Предполагаем, что у вас есть класс ManageBookings
+
+            allUsers.getStyle().set("background-color", "#FFFFFF")
+                    .set("padding", "10px")
+                    .set("border-radius", "8px")
+                    .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
+                    .set("color", "black");
+
+            if (page.equals(AllUsersView.class)) {
+                allUsers.getStyle().set("background-color", "#E8E8E8");
+            }
+            sidebar.add(manageBookingsButton, allUsers);
         }
         if (page.equals(HomePage.class)) {
             homeButton.getStyle().set("background-color", "#E8E8E8");
@@ -98,6 +113,7 @@ public class Sidebar {
         if (page.equals(Schedule.class)) {
             scheduleButton.getStyle().set("background-color", "#E8E8E8");
         }
+
 
         return sidebar;
     }
