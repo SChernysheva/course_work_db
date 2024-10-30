@@ -11,7 +11,7 @@ import java.sql.Time;
 public class Booking_court {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
 
 
     @ManyToOne

@@ -63,16 +63,6 @@ public class BookingCourtService {
     }
 
     @Transactional
-    protected Long addBookingTimeForCourtTransactional(Booking_court bk) throws SQLException {
-
-        Booking_court existingBooking = bookingCourtsRepository.findByCourtIdAndBookingTime(bk.getCourt().getId(), bk.getDate(), bk.getTime());
-        if (existingBooking != null) {
-            return null;
-            //throw new IllegalStateException("Корт уже забронирован на это время.");
-        }
-        return bookingCourtsRepository.save(bk).getId();
-    }
-    @Transactional
     @Async
     public CompletableFuture<Long> addBookingTimeForCourt(Booking_court bk) throws SQLException {
         Booking_court existingBooking = bookingCourtsRepository.findByCourtIdAndBookingTime(bk.getCourt().getId(), bk.getDate(), bk.getTime());
@@ -80,8 +70,11 @@ public class BookingCourtService {
             //return null;
             throw new IllegalStateException("Корт уже забронирован на это время.");
         }
-        return CompletableFuture.supplyAsync(() -> {
-            return bookingCourtsRepository.save(bk).getId();
-        });
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.save(bk).getId());
+    }
+
+    @Async
+    public CompletableFuture<Integer> deleteBookingAsync(int bookingId) {
+        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.deleteById(bookingId));
     }
 }

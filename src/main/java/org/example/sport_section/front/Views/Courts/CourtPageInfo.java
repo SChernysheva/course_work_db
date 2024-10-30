@@ -32,8 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -80,21 +79,30 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
         mainDiv.setPadding(true);
         mainDiv.getStyle().set("border-radius", "15px");
         mainDiv.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
+        remove(loadingSpinner);
         add(mainDiv);
     }
 
     public Div getVerticalMainContent() {
         Div res = new Div();
         VerticalLayout vl = new VerticalLayout();
-        //Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
+        Button homeButton = new Button("На главную");
+        homeButton.getStyle().set("background-color", "#F2F3F4")
+                .set("padding", "10px")
+                .set("border-radius", "8px")
+                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
+                .set("color", "black");
+        homeButton.setWidth("200px");
+        homeButton.setHeight("65px");
+        homeButton.addClickListener(event -> {
+            UI.getCurrent().navigate(HomePage.class);
+        });
         Image courtImage = getImageForCourt(courtId);
         courtImage.getElement().getStyle().set("border-radius", "15px");
         courtImage.getElement().getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
-//        courtImage.getElement().getStyle().set("width", "100%");
-//        courtImage.getElement().getStyle().set("height", "auto");
         courtImage.setWidth("700px");
-        courtImage.setHeight("700px");
-        remove(loadingSpinner);
+        courtImage.setHeight("600px");
+
         Text textTitle = new Text("Аренда корта");
         Div titleContainer = new Div(textTitle);
         titleContainer.getStyle()
@@ -103,7 +111,7 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
                 .set("text-decoration", "underline")
                 .set("font-family", "Arial, sans-serif")
                 .set("margin-bottom", "20px");
-        vl.add(titleContainer, courtImage);
+        vl.add(titleContainer, courtImage, homeButton);
         res.add(vl);
         return res;
     }
@@ -130,7 +138,12 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
         final LocalDate[] selectedDate = new LocalDate[1];
         final Integer[] selectedHour = new Integer[1];
 
-        datePicker.setMin(LocalDate.now());  // Установить минимальную дату на сегодняшний день
+        // Получение текущей даты в московском часовом поясе
+        ZoneId moscowZoneId = ZoneId.of("Europe/Moscow");
+        LocalDate currentDateInMoscow = ZonedDateTime.now(moscowZoneId).toLocalDate();
+
+        // Установка минимальной даты в DatePicker
+        datePicker.setMin(currentDateInMoscow);
 
         datePicker.addValueChangeListener(event -> {
             selectedDate[0] = event.getValue();
@@ -165,6 +178,7 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
                             System.out.println("email: " + email);
                             User user = getUser(email);
                             try {
+
                                 bookCourt(selectedDate[0], selectedHour[0], courtId, user.getId());
                                 Notification.show("Бронирование успешно создано!",  3000, Notification.Position.MIDDLE);
                                 UI.getCurrent().navigate(HomePage.class);

@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,9 +19,17 @@ import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
+import org.example.sport_section.front.Views.Sidebar;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+
+import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
+
 
 @Route("bookings")
 public class Bookings extends HorizontalLayout {
@@ -36,9 +45,7 @@ public class Bookings extends HorizontalLayout {
         add(loadingSpinner);
         setPadding(false);
         getStyle().set("background-color", "#F2F3F4");
-        //setJustifyContentMode(JustifyContentMode.CENTER);
-        //setAlignItems(Alignment.CENTER);
-        //getStyle().set("background-color", "#CFCFCF");
+        getStyle().setHeight("auto");
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userService.getUserAsync(email).join();
         List<BookingDTO> bookings = bookingCourtService.getBookingViewsForUserAsync(user.getId()).join();
@@ -52,10 +59,20 @@ public class Bookings extends HorizontalLayout {
 
     private VerticalLayout loadContent(List<BookingDTO> bookings) {
         VerticalLayout layout = new VerticalLayout();
-        layout.setAlignItems(Alignment.CENTER);
-        layout.setJustifyContentMode(JustifyContentMode.CENTER);
+        //layout.setAlignItems(Alignment.CENTER);
+        //layout.setJustifyContentMode(JustifyContentMode.CENTER);
         layout.setWidthFull();
         layout.getStyle().set("background-color", "#F2F3F4");
+        if (bookings.isEmpty()) {
+            layout.setHeightFull();
+            Text text = new Text("У вас пока нет бронирований");
+            layout.add(text);
+            setHeightFull();
+            return layout;
+        }
+        if (bookings.size() < 5) {
+            setHeightFull();
+        }
         for (var booking : bookings) {
             layout.add(createCourtCard(booking));
         }
@@ -65,7 +82,7 @@ public class Bookings extends HorizontalLayout {
 
     private void addSidebar() {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView();
+        VerticalLayout sidebar = createSidebarView(Bookings.class, UI.getCurrent());
         String email = SecurityUtils.getCurrentUserEmail();
         sidebar.add(createSidebarViewUser(email));
         sidebar.add(getExitButton());
@@ -104,60 +121,21 @@ public class Bookings extends HorizontalLayout {
         Text hour = new Text(booking.getHour() + ":00  ");
         Text number = new Text(booking.getCourtName());
         card.add(date, hour, number);
+
+        ZonedDateTime moscowTime = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
+        Instant moscowInstant = moscowTime.toInstant();
+        int currentMoscowHour = moscowTime.getHour();
+        Date currentMoscowDate = Date.from(moscowInstant);
+        if (currentMoscowDate.before(booking.getDate()) ||
+                (currentMoscowDate.equals(booking.getDate()) && currentMoscowHour < booking.getHour())) {
+            Button cancelButtton = new Button("Отменить бронирование");
+            cancelButtton.addClickListener(e -> {
+                cancelBooking(booking);
+            });
+            card.add(cancelButtton);
+        }
+
         return card;
-    }
-    private VerticalLayout createSidebarView() {
-        VerticalLayout sidebar = new VerticalLayout();
-        sidebar.setWidth("250px");
-
-        // Изменяем цвет фона на чуть более темный и закругляем углы
-        sidebar.getStyle()
-                .set("background-color", "#F2F3F4")
-                .set("border-radius", "10px")        // Закругляем углы
-                .set("padding", "15px");             // Добавляем внутренние отступы для эстетики
-
-        // Добавляем кнопки для навигации
-        Button trainersButton = new Button("Наши тренеры");
-        Button bookingButton = new Button("Мои бронирования");
-        trainersButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        trainersButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-        bookingButton.addClickListener(event ->
-                UI.getCurrent().navigate(Bookings.class));
-        bookingButton.getStyle().set("background-color", "#E8E8E8")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-
-        Button scheduleButton = new Button("Расписание занятий");
-        scheduleButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        scheduleButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-        Button bookButton = new Button("Забронировать корт");
-        bookButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        bookButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-
-        // Добавляем кнопки в сайдбар
-        sidebar.add(bookButton);
-        sidebar.add(trainersButton);
-        sidebar.add(scheduleButton);
-        sidebar.add(bookingButton);
-
-        return sidebar;
     }
 
     private VerticalLayout createSidebarViewUser(String userEmail) {
@@ -212,6 +190,43 @@ public class Bookings extends HorizontalLayout {
             dialog.close(); // Закрываем диалоговое окно
             // Можем (необязательно) добавить логику возврата на домашнюю страницу
             UI.getCurrent().navigate(HomePage.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
+    }
+    private void cancelBooking(BookingDTO booking) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Отменить бронирование?");
+        Button proveButton = new Button("Да");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            //cancel
+            UI.getCurrent().access(() -> {
+                Notification.show("Выполняется отмена бронирования", 1500, Notification.Position.MIDDLE);
+            });
+            bookingCourtService.deleteBookingAsync(booking.getBookingId()).join();
+            UI.getCurrent().access(() -> {
+                Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
+                dialog.close();
+                UI.getCurrent().getPage().reload();
+            });
+        });
+
+        Button cancelButton = new Button("Нет");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            UI.getCurrent().navigate(Bookings.class);
         });
 
         VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);

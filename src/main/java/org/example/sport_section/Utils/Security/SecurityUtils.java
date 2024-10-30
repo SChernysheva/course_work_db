@@ -1,8 +1,12 @@
 package org.example.sport_section.Utils.Security;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Optional;
 
 public class SecurityUtils {
 
@@ -24,6 +28,22 @@ public class SecurityUtils {
 
     public boolean isUserLoggedIn() {
         return getCurrentUserEmail() != null;
+    }
+    private static Optional<Collection<? extends GrantedAuthority>> getUserRoles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                return Optional.of(userDetails.getAuthorities());
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static boolean isAdmin() {
+        return getUserRoles().map(roles -> roles.stream()
+                        .anyMatch(role -> role.getAuthority().equals("ADMIN")))
+                .orElse(false);
     }
 
 }

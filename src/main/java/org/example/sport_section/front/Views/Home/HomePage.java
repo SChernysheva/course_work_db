@@ -16,13 +16,19 @@ import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Court;
 import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.ImageService;
+import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 //import org.example.sport_section.front.Views.Authorize.StartPage;
+import org.example.sport_section.front.Views.ManageBookings.ManageBookings;
+import org.example.sport_section.front.Views.Sidebar;
 import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+
+import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
+
 
 @Route("")
 public class HomePage extends HorizontalLayout {
@@ -30,9 +36,11 @@ public class HomePage extends HorizontalLayout {
     private FlexLayout cardLayout = new FlexLayout();
     private final Div loadingSpinner = createLoadingSpinner();
     private final ImageService imageService;
+    private final UserService userService;
 
     @Autowired
-    public HomePage(CourtService courtService, ImageService imageService) throws InterruptedException {
+    public HomePage(CourtService courtService, ImageService imageService, UserService userService) {
+        this.userService = userService;
         this.imageService = imageService;
         this.courtService = courtService;
         setSizeFull();
@@ -114,7 +122,7 @@ public class HomePage extends HorizontalLayout {
 
     private void loadContent(List<Court> courts, String userEmail, Div imageContainer) {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView();
+        VerticalLayout sidebar = createSidebarView(HomePage.class, UI.getCurrent());
         Div overlay = getOverlay();
 
         cardLayout.setWidthFull();
@@ -219,58 +227,6 @@ public class HomePage extends HorizontalLayout {
         return spinner;
     }
 
-    private VerticalLayout createSidebarView() {
-        VerticalLayout sidebar = new VerticalLayout();
-        sidebar.setWidth("250px");
 
-        // Изменяем цвет фона на чуть более темный и закругляем углы
-        sidebar.getStyle()
-                .set("background-color", "#F2F3F4")
-                .set("border-radius", "10px")        // Закругляем углы
-                .set("padding", "15px");             // Добавляем внутренние отступы для эстетики
-
-        // Добавляем кнопки для навигации
-        Button trainersButton = new Button("Наши тренеры");
-        Button bookingButton = new Button("Мои бронирования");
-        trainersButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        trainersButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-        bookingButton.addClickListener(event ->
-                UI.getCurrent().navigate(Bookings.class));
-        bookingButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-
-        Button scheduleButton = new Button("Расписание занятий");
-        scheduleButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        scheduleButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-        Button bookButton = new Button("Забронировать корт");
-        bookButton.addClickListener(event ->
-                UI.getCurrent().navigate(HomePage.class));
-        bookButton.getStyle().set("background-color", "#E8E8E8")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-
-        // Добавляем кнопки в сайдбар
-        sidebar.add(bookButton);
-        sidebar.add(trainersButton);
-        sidebar.add(scheduleButton);
-        sidebar.add(bookingButton);
-
-        return sidebar;
-    }
 
 }

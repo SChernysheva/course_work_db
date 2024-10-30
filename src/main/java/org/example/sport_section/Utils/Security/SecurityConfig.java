@@ -22,10 +22,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -48,23 +50,6 @@ public class SecurityConfig {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
         return auth.build();
     }
-
-    @Bean
-    public UserDetailsService userDetailsService(IAuthorizeRepository authorizeRepository,
-                                                 IUserRepository userRepository, IAdminRepository adminRepository) {
-        return email -> {
-            Optional<UserModelAuthorization> userEntity = authorizeRepository.getByEmail(email);
-            if (userEntity.isEmpty()) {
-                throw new UsernameNotFoundException("User not found");
-            }
-            org.example.sport_section.Models.User user = userRepository.findByEmail(email);
-            Admin admin = adminRepository.getAdmin(user.getId());
-            User.UserBuilder resUser = User.withUsername(userEntity.get().getEmail())
-                    .password(userEntity.get().getHashPassword());
-            return (admin != null) ? resUser.roles("USER", "ADMIN").build() : resUser.roles("USER").build();
-        };
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -74,7 +59,8 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/**").permitAll()
-                       // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/manageBookings").hasRole("ADMIN")
+                        // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -89,5 +75,30 @@ public class SecurityConfig {
 
         return http.build();
     }
-}
 
+    @Bean
+    public UserDetailsService userDetailsService(IAuthorizeRepository authorizeRepository,
+                                                 IUserRepository userRepository, IAdminRepository adminRepository) {
+        return email -> {
+            Optional<UserModelAuthorization> userEntity = authorizeRepository.getByEmail(email);
+            if (userEntity.isEmpty()) {
+                throw new UsernameNotFoundException("User not found");
+            }
+            org.example.sport_section.Models.User user = userRepository.findByEmail(email);
+            Admin admin = adminRepository.getAdmin(user.getId());
+
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("USER"));
+            if (admin != null) {
+                authorities.add(new SimpleGrantedAuthority("ADMIN"));
+            }
+
+            return new org.springframework.security.core.userdetails.User(
+                    userEntity.get().getEmail(),
+                    userEntity.get().getHashPassword(),
+                    authorities
+            );
+        };
+    }
+
+}
