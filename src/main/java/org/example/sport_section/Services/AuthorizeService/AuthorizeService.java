@@ -26,7 +26,7 @@ public class AuthorizeService {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.getByEmail(email));
     }
 
-    @Async
+    @Async //here
     public CompletableFuture<UserModelAuthorization> saveEmailAsync(String email, String password, long userId) {
         String hashPassword = PasswordUtils.hashPassword(password);
         return CompletableFuture.supplyAsync(() -> authorizeRepository.save(new UserModelAuthorization(email, hashPassword, userId)));

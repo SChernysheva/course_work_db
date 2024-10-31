@@ -7,6 +7,7 @@ import org.example.sport_section.Repositories.Images.ImageRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -19,12 +20,12 @@ public class ImageService {
     }
 
     @Async
-    public CompletableFuture<Image> getImageByPage(String page) {
+    public CompletableFuture<Optional<Image>> getImageByPage(String page) {
         return CompletableFuture.supplyAsync(() -> imageRepository.findByImagePage(page));
     }
 
     @Async
-    public CompletableFuture<CourtImage> getImageByCourtId(Integer id) {
+    public CompletableFuture<Optional<CourtImage>> getImageByCourtId(Integer id) {
         return CompletableFuture.supplyAsync(() -> imageCourtRepository.findByCourtId(id));
     }
 

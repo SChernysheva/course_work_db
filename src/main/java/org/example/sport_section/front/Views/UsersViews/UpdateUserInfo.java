@@ -12,6 +12,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
+import org.checkerframework.checker.units.qual.N;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Validators.UserValidator;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.validation.Validator;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 @Route("user/update")
 public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<Integer> {
@@ -109,12 +111,7 @@ public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<In
                 user.setPhone(phone);
             }
         }
-        UI.getCurrent().access(() -> Notification.show("Выполняется", 1000, Notification.Position.MIDDLE));
-        userService.updateUser(user.getId(), user).join();
-        UI.getCurrent().access(() -> {
-            Notification.show("Готово", 1000, Notification.Position.MIDDLE);
-            UI.getCurrent().getPage().reload();
-        });
+        updateUser(user);
     }
 
     private Div createLoadingSpinner() {
@@ -129,6 +126,21 @@ public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<In
                 .set("font-weight", "bold")
                 .set("color", "#666"); // Темно-серый цвет текста
         return spinner;
+    }
+    private void updateUser(User user) {
+        UI.getCurrent().access(() -> Notification.show("Выполняется", 1000, Notification.Position.MIDDLE));
+        try {
+            userService.updateUser(user.getId(), user).join();
+            UI.getCurrent().access(() -> {
+                Notification.show("Готово", 1000, Notification.Position.MIDDLE);
+                UI.getCurrent().getPage().reload();
+            });
+        } catch (CompletionException ex) {
+            UI.getCurrent().access( () -> {
+                Notification.show("Ошибка: " + ex.getMessage(), 2000, Notification.Position.MIDDLE);
+            });
+        }
+
     }
 }
 

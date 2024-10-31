@@ -36,6 +36,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 @Route("courts/info")
 public class BookCourtView extends HorizontalLayout implements HasUrlParameter<String> {
@@ -173,7 +174,11 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
                         if (selectedDate[0] != null && selectedHour[0] != null) {
                             Notification.show("Выполняется бронирование " + selectedDate[0] +  " " + sdf.format(selectedHour[0]), 3000, Notification.Position.MIDDLE);
                             System.out.println("email: " + email);
-                            User user = getUser(email);
+                            Optional<User> userOpt = getUser(email);
+                            if (!userOpt.isPresent()) {
+                                //todo
+                            }
+                            User user = userOpt.get();
                             try {
                                 bookCourt(selectedDate[0], selectedHour[0], courtId, user);
                                 Notification.show("Бронирование успешно создано!",  3000, Notification.Position.MIDDLE);
@@ -181,11 +186,9 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
                                 timeDialog.close();
                             } catch (IllegalStateException e) {
                                 UI.getCurrent().access(() -> {
-                                    Notification.show("Корт уже забронирован на это время.",  3000, Notification.Position.MIDDLE);
+                                    Notification.show(e.getMessage(),  3000, Notification.Position.MIDDLE);
                                     timeDialog.close();
                                 });
-                            } catch (SQLException e) {
-                                //todo
                             }
                         }
                     });
@@ -224,16 +227,23 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
         return availableHours;
     }
 
-    private Integer bookCourt(LocalDate date, Time hour, int courtId, User user) throws SQLException {
+    private void bookCourt(LocalDate date, Time hour, int courtId, User user) throws IllegalStateException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {
             Booking_court bk = new Booking_court(court.get(), user, Date.valueOf(date), hour);
-            return bookingCourtService.addBookingTimeForCourt(bk).join();
+            try {
+                bookingCourtService.addBookingTimeForCourt(bk).join();
+            } catch (CompletionException e) {
+                throw new IllegalStateException("Ошибка: корт уже забронирован на это время");
+            }
+        } else {
+            UI.getCurrent().access(() -> {
+                throw new IllegalStateException("Ошибка: корт не существует или не доступен");
+            });
         }
-        throw new SQLException();
     }
 
-    private User getUser(String email) {
+    private Optional<User> getUser(String email) {
         return userService.getUserAsync(email).join();
     }
 
@@ -251,8 +261,13 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
         return spinner;
     }
     private Image getImageForCourt(int courtId) {
-        CourtImage imageData = imageService.getImageByCourtId(courtId).join();
-        Image image = ImageHelper.createImageFromByteArray(imageData.getImage_data(), "описание");
+        Optional<CourtImage> imageData = imageService.getImageByCourtId(courtId).join();
+        if (imageData.isPresent()) {
+            Image image = ImageHelper.createImageFromByteArray(imageData.get().getImage_data(), "описание");
+            return image;
+        }
+        Image image = new Image();
+        image.add("Изображения для корта пока нет");
         return image;
     }
 }

@@ -22,6 +22,7 @@ import org.example.sport_section.Services.UserService.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
+import java.util.concurrent.CompletionException;
 
 @Route("admin/users/info")
 public class UserInfoView extends VerticalLayout implements HasUrlParameter<Integer> {
@@ -78,14 +79,7 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
                 Notification.show("Выберите группу для (пере)записи", 1000, Notification.Position.MIDDLE);
                 return;
             }
-            UI.getCurrent().access(() -> {
-                Notification.show("Выполняется", 1000, Notification.Position.MIDDLE);
-            });
-            userService.addUserIntoGroup(userId, group.getId()).join();
-            UI.getCurrent().access(() -> {
-                Notification.show("Успешно", 1000, Notification.Position.MIDDLE);
-                UI.getCurrent().getPage().reload();
-            });
+            addIntoGroup(userId, group.getId());
         });
         userInfoLayout.add(ok);
         if (user.getGroup() != null) {
@@ -171,12 +165,7 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         proveButton.getStyle().set("background-color", "lightgray");
         proveButton.getStyle().set("color", "white");
         proveButton.addClickListener(event -> {
-            UI.getCurrent().access(() -> {
-                Notification.show("Выполняется", 1000, Notification.Position.MIDDLE);
-                userService.addUserIntoGroup(userId, null).join();
-                Notification.show("Успешно", 1000, Notification.Position.MIDDLE);
-                UI.getCurrent().getPage().reload();
-            });
+            addIntoGroup(userId, null);
         });
 
         Button cancelButton = new Button("Отмена");
@@ -193,5 +182,22 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         dialog.setWidth("400px"); // Настройка ширины диалогового окна
         dialog.setHeight("200px"); // Настройка высоты диалогового окна
         dialog.open(); // Открываем диалоговое окно
+    }
+
+    public void addIntoGroup(int userId, Integer groupId) {
+        try {
+            UI.getCurrent().access(() -> {
+                Notification.show("Выполняется", 1000, Notification.Position.MIDDLE);
+            });
+            userService.addUserIntoGroup(userId, groupId).join();
+            UI.getCurrent().access(() -> {
+                Notification.show("Успешно", 1000, Notification.Position.MIDDLE);
+                UI.getCurrent().getPage().reload();
+            });
+        } catch (CompletionException ex) {
+            UI.getCurrent().access( () -> {
+                Notification.show("Ошибка: " + ex.getMessage(), 2000, Notification.Position.MIDDLE);
+            });
+        }
     }
 }

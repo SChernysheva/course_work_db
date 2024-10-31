@@ -83,8 +83,11 @@ public class SecurityConfig {
             if (userEntity.isEmpty()) {
                 throw new UsernameNotFoundException("User not found");
             }
-            User user = userRepository.findByEmail(email);
-
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (!userOpt.isPresent()) {
+                throw new UsernameNotFoundException("User not found");
+            }
+            User user = userOpt.get();
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("USER"));
             if (user.getAdmin() != null) {

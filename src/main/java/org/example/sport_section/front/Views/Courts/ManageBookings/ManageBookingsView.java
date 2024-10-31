@@ -23,9 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
@@ -114,9 +116,10 @@ public class ManageBookingsView extends HorizontalLayout {
         card.setHeight("150px"); // Делаем высоту автоматической, чтобы текст не обрезался
         card.setPadding(true); // Устанавливаем отступы внутри карточки
         card.setAlignItems(FlexComponent.Alignment.CENTER); // Центрируем элементы по вертикали
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 
         Text date = new Text(booking.getDate().toString() + "  ");
-        Text hour = new Text(booking.getTime() + ":00  ");
+        Text hour = new Text(sdf.format(booking.getTime()) + "  ");
         Text number = new Text(booking.getCourt().getCourtName() + "  ");
         Text user = new Text(booking.getUser().getFirst_name() + " " + booking.getUser().getLast_name() + "  ");
         Text email = new Text(booking.getUser().getEmail() + "  ");
@@ -215,12 +218,20 @@ public class ManageBookingsView extends HorizontalLayout {
             UI.getCurrent().access(() -> {
                 Notification.show("Выполняется отмена бронирования", 1500, Notification.Position.MIDDLE);
             });
-            bookingCourtService.deleteBookingAsync(booking.getId()).join();
-            UI.getCurrent().access(() -> {
-                Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
+            try {
+                bookingCourtService.deleteBookingAsync(booking.getId()).join();
+                UI.getCurrent().access(() -> {
+                    Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
+                    dialog.close();
+                    UI.getCurrent().getPage().reload();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access(() -> {
+                    Notification.show("Ошибка: такого бронирования нет");
+                });
                 dialog.close();
-                UI.getCurrent().getPage().reload();
-            });
+            }
+
         });
 
         Button cancelButton = new Button("Нет");

@@ -6,6 +6,8 @@ import org.example.sport_section.Validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -18,8 +20,8 @@ public class UserController {
     @GetMapping("/validate")
     public String validate(@RequestParam String email, @RequestParam String firstName, @RequestParam String lastName,
                            @RequestParam String phone) {
-        User user = userService.getUserAsync(email).join();
-        if (user != null) {
+        Optional<User> user = userService.getUserAsync(email).join();
+        if (user.isPresent()) {
             return "Пользователь с такой почтой уже существует";
         }
         String ans = UserValidator.validateEmail(email);
@@ -32,13 +34,7 @@ public class UserController {
     @PostMapping("/addUser")
     public Integer addUser(@RequestParam String email, @RequestParam String firstName, @RequestParam String lastName,
                         @RequestParam String phone) {
-        System.out.println("controller user");
         User user = new User(firstName, lastName, email, phone);
         return userService.addUserAsync(user).join();
-    }
-
-    @GetMapping("/getUser")
-    public User getUser(@RequestParam String email) {
-        return userService.getUserAsync(email).join();
     }
 }

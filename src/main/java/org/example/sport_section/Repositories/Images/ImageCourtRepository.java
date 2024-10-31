@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ImageCourtRepository extends JpaRepository<CourtImage, Integer> {
     @Query(value = "SELECT * FROM court_images WHERE court_id = :id", nativeQuery = true)
-    public CourtImage findByCourtId(@Param("id") Integer id);
+    public Optional<CourtImage> findByCourtId(@Param("id") Integer id);
 }

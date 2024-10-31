@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -47,7 +48,14 @@ public class HomePage extends HorizontalLayout {
         setSpacing(false);
         add(loadingSpinner);
         String userEmail = SecurityUtils.getCurrentUserEmail();
-        User user = userService.getUserAsync(userEmail).join();
+        Optional<User> userOpt = userService.getUserAsync(userEmail).join();
+        if (!userOpt.isPresent()) {
+            UI.getCurrent().access(() -> {
+                Notification.show("Что-то пошло не так, попробуйте авторизоваться еще раз", 5000, Notification.Position.MIDDLE);
+                SecurityUtils.deleteAuth();
+            });
+        }
+        User user = userOpt.get();
         Div imageContainer = addImageContainer();
         List<Court> courts = courtService.getCourtsAsync().join();
         UI.getCurrent().access(() -> {
@@ -187,12 +195,15 @@ public class HomePage extends HorizontalLayout {
                 .set("border-radius", "10px")
                 .set("overflow", "hidden");    // Обрезает выступающие части
         imageContainer.setSizeFull();
-        org.example.sport_section.Models.Images.Image imageValue = imageService.getImageByPage("home").join();
-        Image image = ImageHelper.createImageFromByteArray(imageValue.getImage_data(), "Описание");
-        image.setWidth("100%");
-        image.setHeight("100%");
-        image.getStyle().set("object-fit", "cover");  // Контролирует размер изображения
-        imageContainer.add(image);
+        Optional<org.example.sport_section.Models.Images.Image> imageValue = imageService.getImageByPage("home").join();
+        Image image = null;
+        if (imageValue.isPresent()) {
+            image = ImageHelper.createImageFromByteArray(imageValue.get().getImage_data(), "Описание");
+            image.setWidth("100%");
+            image.setHeight("100%");
+            image.getStyle().set("object-fit", "cover");  // Контролирует размер изображения
+            imageContainer.add(image);
+        }
         return imageContainer;
     }
     private void addCourtsToView(List<Court> courts) {

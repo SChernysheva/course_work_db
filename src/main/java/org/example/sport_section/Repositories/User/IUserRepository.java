@@ -8,10 +8,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT * FROM users WHERE email = :email", nativeQuery = true)
-    public User findByEmail(@Param("email") String email);
+    public Optional<User> findByEmail(@Param("email") String email);
 
     @Modifying
     @Transactional

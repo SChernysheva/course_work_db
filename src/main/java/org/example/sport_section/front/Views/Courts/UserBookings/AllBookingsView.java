@@ -26,6 +26,8 @@ import java.time.*;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
@@ -46,7 +48,11 @@ public class AllBookingsView extends HorizontalLayout {
         getStyle().set("background-color", "#F2F3F4");
         getStyle().setHeight("auto");
         String email = SecurityUtils.getCurrentUserEmail();
-        User user = userService.getUserAsync(email).join();
+        Optional<User> userOpt = userService.getUserAsync(email).join();
+        if (!userOpt.isPresent()) {
+            //todo
+        }
+        User user = userOpt.get();
         List<Booking_court> bookings = bookingCourtService.getBookingsForUserAsync(user.getId()).join();
         bookings.sort(Comparator.comparing(Booking_court::getDate).thenComparing(Booking_court::getTime).reversed());
         UI.getCurrent().access(() -> {
@@ -213,12 +219,19 @@ public class AllBookingsView extends HorizontalLayout {
             UI.getCurrent().access(() -> {
                 Notification.show("Выполняется отмена бронирования", 1500, Notification.Position.MIDDLE);
             });
-            bookingCourtService.deleteBookingAsync(booking.getId()).join();
-            UI.getCurrent().access(() -> {
-                Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
+            try {
+                bookingCourtService.deleteBookingAsync(booking.getId()).join();
+                UI.getCurrent().access(() -> {
+                    Notification.show("Ваше бронирование отменено", 3000, Notification.Position.MIDDLE);
+                    dialog.close();
+                    UI.getCurrent().getPage().reload();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access(() -> {
+                    Notification.show("Ошибка: такого бронирования нет");
+                });
                 dialog.close();
-                UI.getCurrent().getPage().reload();
-            });
+            }
         });
 
         Button cancelButton = new Button("Нет");

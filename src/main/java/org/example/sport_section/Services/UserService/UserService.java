@@ -1,7 +1,11 @@
 package org.example.sport_section.Services.UserService;
 
 
+import jakarta.persistence.EntityNotFoundException;
+import org.example.sport_section.Exceptions.NotFoundException;
+import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.Users.User;
+import org.example.sport_section.Repositories.GroupRepository.GroupRepository;
 import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +21,13 @@ import java.util.concurrent.CompletionException;
 public class UserService {
     private IUserRepository userRepository;
     private IAdminRepository adminRepository;
+    private GroupRepository groupRepository;
 
     @Autowired
-    public UserService(IUserRepository userRepository, IAdminRepository adminRepository) {
+    public UserService(IUserRepository userRepository, IAdminRepository adminRepository, GroupRepository groupRepository) {
         this.userRepository = userRepository;
         this.adminRepository = adminRepository;
+        this.groupRepository = groupRepository;
     }
 
     @Async
@@ -29,21 +35,36 @@ public class UserService {
         return CompletableFuture.supplyAsync(() -> userRepository.findAll());
     }
 
-    //here
-    @Async
-    public CompletableFuture<Integer> addUserAsync(User user) {
-        return CompletableFuture.supplyAsync(() -> userRepository.save(user).getId());
-    }
-
-    //here!!!!
-    @Async
-    public CompletableFuture<Void> deleteUserAsync(int userId) {
-        userRepository.deleteById(userId);
-        return CompletableFuture.completedFuture(null);
-    }
-
     @Async //here
-    public CompletableFuture<User> getUserAsync(String email) {
+    public CompletableFuture<Integer> addUserAsync(User user) throws CompletionException{
+        return CompletableFuture.supplyAsync(() -> {
+            return userRepository.save(user).getId();
+        }).handle((result, ex) -> {
+            if (ex != null) {
+                throw new CompletionException(new ValueAlreadyExistsException("Такая почта уже существует"));
+            }
+            return result;
+        });
+    }
+
+    @Async
+    public CompletableFuture<Void> deleteUserAsync(int id) throws CompletionException {
+        return CompletableFuture.runAsync(() -> {
+            if (!userRepository.existsById(id)) {
+                throw new RuntimeException("User with id " + id + " not found.");
+            }
+            userRepository.deleteById(id);
+        }).handle( (result, ex) -> {
+            if (ex != null) {
+                throw new CompletionException(new NotFoundException(ex.getMessage()));
+            }
+            return result;
+        });
+    }
+
+
+    @Async
+    public CompletableFuture<Optional<User>> getUserAsync(String email) {
         return CompletableFuture.supplyAsync(() -> userRepository.findByEmail(email));
     }
 
@@ -53,7 +74,7 @@ public class UserService {
     }
 
     @Async
-    public CompletableFuture<Integer> addAdminAsync(int userId) {
+    public CompletableFuture<Integer> addAdminAsync(int userId) throws CompletionException {
         return CompletableFuture.supplyAsync(() -> adminRepository.save(userId))
                 .handle((result, ex) -> {
                     if (ex != null) {
@@ -63,19 +84,41 @@ public class UserService {
                 });
     }
 
-    //here
     @Async
-    public CompletableFuture<Integer> addUserIntoGroup(int userId, Integer groupId) {
-        return CompletableFuture.supplyAsync( () -> userRepository.addUserIntoGroup(groupId, userId));
+    public CompletableFuture<Void> addUserIntoGroup(int userId, Integer groupId) throws CompletionException {
+        return CompletableFuture.runAsync(() -> {
+            if (!userRepository.existsById(userId)) {
+                throw new IllegalStateException("Пользователь не найден");
+            }
+            if (groupId != null && !groupRepository.existsById(groupId)) {
+                throw new IllegalStateException("Группа не найдена");
+            }
+            userRepository.addUserIntoGroup(groupId, userId);
+        }).handle((result, ex) -> {
+            if (ex != null) {
+                throw new CompletionException(new NotFoundException(ex.getMessage()));
+            }
+            return result;
+        });
     }
 
-    //here
-    public CompletableFuture<User> updateUser(int id, User updatedUser) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
-        }
+    @Async
+    public CompletableFuture<User> updateUser(int id, User updatedUser) throws CompletionException {
         updatedUser.setId(id);
-        return CompletableFuture.supplyAsync(() -> userRepository.save(updatedUser));
+        return CompletableFuture.supplyAsync(() -> {
+            if (!userRepository.existsById(id)) {
+                throw new IllegalStateException("Пользователь не найдем");
+            }
+            if (userRepository.findByEmail(updatedUser.getEmail()).isPresent()) {
+                throw new IllegalStateException("Пользователь с такой почтой уже существует");
+            }
+            return userRepository.save(updatedUser);
+        }).handle((result, ex) -> {
+            if (ex != null) {
+                throw new CompletionException(new NotFoundException(ex.getMessage()));
+            }
+            return result;
+        });
     }
 
 }

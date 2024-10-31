@@ -26,6 +26,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 @Route("admin/addBooking")
 public class AddBookingView extends VerticalLayout {
@@ -140,11 +141,9 @@ public class AddBookingView extends VerticalLayout {
                 timeDialog.close();
             } catch (IllegalStateException ex) {
                 UI.getCurrent().access(() -> {
-                    Notification.show("Корт уже забронирован на это время.",  3000, Notification.Position.MIDDLE);
+                    Notification.show(ex.getMessage(),  3000, Notification.Position.MIDDLE);
                     timeDialog.close();
                 });
-            } catch (SQLException ex) {
-                //todo
             }
         });
         content.add(userComboBox, courtComboBox, datePicker, processButton);
@@ -170,12 +169,19 @@ public class AddBookingView extends VerticalLayout {
         }
         return availableHours;
     }
-    private Integer bookCourt(LocalDate date, Time hour, int courtId, User user) throws SQLException {
+    private void bookCourt(LocalDate date, Time hour, int courtId, User user) throws IllegalStateException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {
             Booking_court bk = new Booking_court(court.get(), user, Date.valueOf(date), hour);
-            return bookingCourtService.addBookingTimeForCourt(bk).join();
+            try {
+                bookingCourtService.addBookingTimeForCourt(bk).join();
+            } catch (CompletionException e) {
+                throw new IllegalStateException("Ошибка: корт уже забронирован на это время");
+            }
+        } else {
+            UI.getCurrent().access(() -> {
+                throw new IllegalStateException("Ошибка: корт не существует или не доступен");
+            });
         }
-        throw new SQLException();
     }
 }
