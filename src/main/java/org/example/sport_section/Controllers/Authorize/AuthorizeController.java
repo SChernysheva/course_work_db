@@ -26,7 +26,7 @@ public class AuthorizeController {
         return authorizeService.getUserAsync(email).join();
     }
     @PostMapping("/addUser")
-    public Void addUser(@RequestParam String email, @RequestParam String password, @RequestParam long userId) {
+    public UserModelAuthorization addUser(@RequestParam String email, @RequestParam String password, @RequestParam long userId) {
         return authorizeService.saveEmailAsync(email, password, userId).join();
     }
 }

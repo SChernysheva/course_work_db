@@ -22,7 +22,6 @@ public class CourtService {
 
     @Async
     public CompletableFuture<List<Court>> getCourtsAsync() {
-        System.out.println("service getCourtsAsync");
         return CompletableFuture.supplyAsync(courtRepository::findAll);
     }
     @Async

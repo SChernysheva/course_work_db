@@ -36,8 +36,6 @@ public class AllUsersView extends HorizontalLayout {
         setPadding(false);
         getStyle().set("background-color", "#F2F3F4");
         getStyle().setHeight("auto");
-        String email = SecurityUtils.getCurrentUserEmail();
-        User user = userService.getUserAsync(email).join();
         allUsers = userService.getUsersAsync().join();
 
         UI.getCurrent().access(() -> {

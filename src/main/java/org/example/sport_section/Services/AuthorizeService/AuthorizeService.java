@@ -1,5 +1,6 @@
 package org.example.sport_section.Services.AuthorizeService;
 
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Models.Users.UserModelAuthorization;
 import org.example.sport_section.Repositories.Authorize.IAuthorizeRepository;
 import org.example.sport_section.Utils.Security.PasswordUtils;
@@ -21,23 +22,14 @@ public class AuthorizeService {
     }
 
     @Async
-    public CompletableFuture<String> getHashPasswordForEmailAsync(String email) {
-        return CompletableFuture.supplyAsync(() -> authorizeRepository.getHashPasswordForEmail(email));
-    }
-    @Async
     public CompletableFuture<Optional<UserModelAuthorization>> getUserAsync(String email) {
         return CompletableFuture.supplyAsync(() -> authorizeRepository.getByEmail(email));
     }
 
-    public boolean checkPassword(String providedPassword, String expected) {
-        return PasswordUtils.checkPassword(providedPassword, expected);
-    }
-
     @Async
-    public CompletableFuture<Void> saveEmailAsync(String email, String password, long userId) {
+    public CompletableFuture<UserModelAuthorization> saveEmailAsync(String email, String password, long userId) {
         String hashPassword = PasswordUtils.hashPassword(password);
-        authorizeRepository.save(new UserModelAuthorization(email, hashPassword, userId));
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.supplyAsync(() -> authorizeRepository.save(new UserModelAuthorization(email, hashPassword, userId)));
     }
 
 }

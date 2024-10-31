@@ -29,21 +29,21 @@ public class UserService {
         return CompletableFuture.supplyAsync(() -> userRepository.findAll());
     }
 
+    //here
     @Async
     public CompletableFuture<Integer> addUserAsync(User user) {
-        System.out.println("addUserAsync" + user.getEmail());
         return CompletableFuture.supplyAsync(() -> userRepository.save(user).getId());
     }
 
+    //here!!!!
     @Async
     public CompletableFuture<Void> deleteUserAsync(int userId) {
         userRepository.deleteById(userId);
         return CompletableFuture.completedFuture(null);
     }
 
-    @Async
+    @Async //here
     public CompletableFuture<User> getUserAsync(String email) {
-        System.out.println("getUserAsync" + email);
         return CompletableFuture.supplyAsync(() -> userRepository.findByEmail(email));
     }
 
@@ -51,11 +51,6 @@ public class UserService {
     public CompletableFuture<Optional<User>> getUserAsync(int id) {
         return CompletableFuture.supplyAsync(() -> userRepository.findById(id));
     }
-
-//    @Async
-//    public CompletableFuture<Admin> getAdminByUserIdAsync(int userId) {
-//        return CompletableFuture.supplyAsync(() -> adminRepository.getAdmin(userId));
-//    }
 
     @Async
     public CompletableFuture<Integer> addAdminAsync(int userId) {
@@ -68,9 +63,19 @@ public class UserService {
                 });
     }
 
+    //here
     @Async
     public CompletableFuture<Integer> addUserIntoGroup(int userId, Integer groupId) {
         return CompletableFuture.supplyAsync( () -> userRepository.addUserIntoGroup(groupId, userId));
+    }
+
+    //here
+    public CompletableFuture<User> updateUser(int id, User updatedUser) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
+        }
+        updatedUser.setId(id);
+        return CompletableFuture.supplyAsync(() -> userRepository.save(updatedUser));
     }
 
 }

@@ -14,15 +14,18 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Court;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.ImageService.ImageService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 //import org.example.sport_section.front.Views.Authorize.StartPage;
+import org.example.sport_section.front.Views.UsersViews.UpdateUserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
@@ -44,12 +47,12 @@ public class HomePage extends HorizontalLayout {
         setSpacing(false);
         add(loadingSpinner);
         String userEmail = SecurityUtils.getCurrentUserEmail();
-        System.out.println("email in home page" + userEmail);
+        User user = userService.getUserAsync(userEmail).join();
         Div imageContainer = addImageContainer();
         List<Court> courts = courtService.getCourtsAsync().join();
         UI.getCurrent().access(() -> {
             remove(loadingSpinner);
-            loadContent(courts, userEmail, imageContainer);
+            loadContent(courts, userEmail, user.getId(), imageContainer);
         });
     }
 
@@ -67,7 +70,7 @@ public class HomePage extends HorizontalLayout {
         });
         return exitButton;
     }
-    private VerticalLayout createSidebarViewUser(String userEmail) {
+    private VerticalLayout createSidebarViewUser(String userEmail, int userId) {
         VerticalLayout sidebar = new VerticalLayout();
         // Создание контейнера с информацией о пользователе
         Div userContainer = new Div();
@@ -102,7 +105,6 @@ public class HomePage extends HorizontalLayout {
         Button cancelButton = new Button("Отмена");
         cancelButton.addClickListener(event -> {
             dialog.close(); // Закрываем диалоговое окно
-            // Можем (необязательно) добавить логику возврата на домашнюю страницу
             UI.getCurrent().navigate(HomePage.class);
         });
 
@@ -117,7 +119,7 @@ public class HomePage extends HorizontalLayout {
         dialog.open(); // Открываем диалоговое окно
     }
 
-    private void loadContent(List<Court> courts, String userEmail, Div imageContainer) {
+    private void loadContent(List<Court> courts, String userEmail, int userId, Div imageContainer) {
         // Создаем и добавляем боковую панель
         VerticalLayout sidebar = createSidebarView(HomePage.class, UI.getCurrent());
         Div overlay = getOverlay();
@@ -132,7 +134,17 @@ public class HomePage extends HorizontalLayout {
         cardLayout.setAlignItems(Alignment.CENTER); // Центруем по горизонтали
         overlay.add(cardLayout);
         imageContainer.add(overlay);
-        sidebar.add(createSidebarViewUser(userEmail));
+        sidebar.add(createSidebarViewUser(userEmail, userId));
+        Button update = new Button("Изменить мои контакты");
+        update.getStyle().set("background-color", "#888888")  // Серый фон кнопки
+                .set("color", "#ffffff")               // Белый текст
+                .set("border", "none")                 // Убираем рамку
+                .set("padding", "10px 20px")           // Отступы
+                .set("border-radius", "5px");
+        update.addClickListener(event -> {
+            updateUser(userId);
+        });
+        sidebar.add(update);
         sidebar.add(getExitButton());
         add(sidebar);
         add(imageContainer);
@@ -208,6 +220,10 @@ public class HomePage extends HorizontalLayout {
         card.addClickListener(event -> goToCourtInfo(court));
         div.add(card);
         return div;
+    }
+
+    public void updateUser(int userId) {
+        UI.getCurrent().navigate("user/update/" + userId);
     }
 
     private Div createLoadingSpinner() {
