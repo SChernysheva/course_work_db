@@ -1,6 +1,6 @@
 package org.example.sport_section.Repositories.GroupRepository;
 
-import org.example.sport_section.Models.Group;
+import org.example.sport_section.Models.Groups.Group;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

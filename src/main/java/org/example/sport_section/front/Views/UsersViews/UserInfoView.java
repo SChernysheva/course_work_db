@@ -1,11 +1,10 @@
-package org.example.sport_section.front.Views;
+package org.example.sport_section.front.Views.UsersViews;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -15,26 +14,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.Booking_court;
-import org.example.sport_section.Models.Court;
-import org.example.sport_section.Models.Group;
-import org.example.sport_section.Models.User;
-import org.example.sport_section.Services.CourtService.CourtService;
+import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Groups.Group;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.GroupService.GroupService;
 import org.example.sport_section.Services.UserService.UserService;
-import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.AllUsers.AllUsersView;
-import org.example.sport_section.front.Views.Home.HomePage;
-import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Route("admin/users/info")
 public class UserInfoView extends VerticalLayout implements HasUrlParameter<Integer> {

@@ -1,6 +1,7 @@
-package org.example.sport_section.Models;
+package org.example.sport_section.Models.Courts;
 
 import jakarta.persistence.*;
+import org.example.sport_section.Models.Users.User;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -23,15 +24,15 @@ public class Booking_court {
     private User user;
 
     private Date date;
-    private int time;
+    private Time time;
 
-    public Booking_court(Court court, User user, Date date, int time) {
+    public Booking_court(Court court, User user, Date date, Time time) {
         this.court = court;
         this.user = user;
         this.date = date;
         this.time = time;
     }
-    public Booking_court(Court court, User user, int id, Date date, int time) {
+    public Booking_court(Court court, User user, int id, Date date, Time time) {
         this.court = court;
         this.user = user;
         this.id = id;
@@ -75,11 +76,11 @@ public class Booking_court {
         this.date = date;
     }
 
-    public int getTime() {
+    public Time getTime() {
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(Time time) {
         this.time = time;
     }
 }

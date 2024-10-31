@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -16,14 +15,13 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.Booking_court;
-import org.example.sport_section.Models.Court;
-import org.example.sport_section.Models.CourtImage;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Courts.Court;
+import org.example.sport_section.Models.Images.CourtImage;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.CourtService.CourtService;
-import org.example.sport_section.Services.ImageService;
+import org.example.sport_section.Services.ImageService.ImageService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
@@ -32,13 +30,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Route("courts/info")
-public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<String> {
+public class BookCourtView extends HorizontalLayout implements HasUrlParameter<String> {
     private final Div loadingSpinner = createLoadingSpinner();
     private final CourtService courtService;
     private final UserService userService;
@@ -47,7 +47,7 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
     private int courtId;
 
     @Autowired
-    public CourtPageInfo(CourtService courtService, UserService userService,
+    public BookCourtView(CourtService courtService, UserService userService,
                          BookingCourtService bookingCourtService, ImageService imageService) {
         this.imageService = imageService;
         this.courtService = courtService;
@@ -136,28 +136,25 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
         timeDialog.add(timeLayout);
 
         final LocalDate[] selectedDate = new LocalDate[1];
-        final Integer[] selectedHour = new Integer[1];
-
-        // Получение текущей даты в московском часовом поясе
-        ZoneId moscowZoneId = ZoneId.of("Europe/Moscow");
-        LocalDate currentDateInMoscow = ZonedDateTime.now(moscowZoneId).toLocalDate();
+        final Time[] selectedHour = new Time[1];
 
         // Установка минимальной даты в DatePicker
-        datePicker.setMin(currentDateInMoscow);
+        datePicker.setMin(LocalDate.now());
 
         datePicker.addValueChangeListener(event -> {
             selectedDate[0] = event.getValue();
             if (selectedDate[0] != null) {
-                List<Integer> aviableHours = getAviableHours(courtId, selectedDate[0]);
+                List<Time> aviableHours = getAviableHours(courtId, selectedDate[0]);
 
                 UI.getCurrent().access(() -> {
                     timeLayout.removeAll();
                     timeLayout.add(new Text("Выберите доступное время для " + selectedDate[0]));
-                    for (Integer hour : aviableHours) {
-                        Button timeButton = new Button(hour + ":00");
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                    for (Time hour : aviableHours) {
+                        Button timeButton = new Button(sdf.format(hour));
                         timeButton.addClickListener(e -> {
                             selectedHour[0] = hour;
-                            Notification.show("Выбрано " + hour + ":00",  3000, Notification.Position.MIDDLE);
+                            Notification.show("Выбрано " + sdf.format(hour),  3000, Notification.Position.MIDDLE);
                             timeLayout.getChildren()
                                     .filter(component -> component instanceof Button)
                                     .map(component -> (Button) component)
@@ -174,7 +171,7 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
 
                     Button bookButton = new Button("Забронировать", bookEvent -> {
                         if (selectedDate[0] != null && selectedHour[0] != null) {
-                            Notification.show("Выполняется бронирование " + selectedDate[0] +  " " + selectedHour[0] + ":00", 3000, Notification.Position.MIDDLE);
+                            Notification.show("Выполняется бронирование " + selectedDate[0] +  " " + sdf.format(selectedHour[0]), 3000, Notification.Position.MIDDLE);
                             System.out.println("email: " + email);
                             User user = getUser(email);
                             try {
@@ -206,8 +203,8 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
         return datePicker;
     }
 
-    private List<Integer> getAviableHours(int courtId, LocalDate date) {
-        List<Integer> availableHours = new ArrayList<>();
+    private List<Time> getAviableHours(int courtId, LocalDate date) {
+        List<Time> availableHours = new ArrayList<>();
         if (LocalDate.now().isAfter(date)) {
             //todo
         }
@@ -216,17 +213,18 @@ public class CourtPageInfo extends HorizontalLayout implements HasUrlParameter<S
             LocalTime currentTime = LocalTime.now();
             startHour = Math.max(7, currentTime.getHour() + 1);
         }
-        List<Integer> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
+        List<Time> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
+        System.out.println("booking hours: " + bookingHours);
         for (int i = startHour; i <= 22; i++) {
-            if (!bookingHours.contains(i)) {
-                availableHours.add(i);
+            Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
+            if (!bookingHours.contains(currentTime)) {
+                availableHours.add(currentTime);
             }
         }
         return availableHours;
-
     }
 
-    private Integer bookCourt(LocalDate date, int hour, int courtId, User user) throws SQLException {
+    private Integer bookCourt(LocalDate date, Time hour, int courtId, User user) throws SQLException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {
             Booking_court bk = new Booking_court(court.get(), user, Date.valueOf(date), hour);

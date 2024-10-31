@@ -1,7 +1,7 @@
 package org.example.sport_section.Services.UserService;
 
 
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

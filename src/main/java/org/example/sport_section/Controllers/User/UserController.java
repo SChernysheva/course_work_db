@@ -1,13 +1,10 @@
 package org.example.sport_section.Controllers.User;
 
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Validators.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.xml.validation.Validator;
-import java.sql.SQLException;
 
 @RestController
 @RequestMapping("/api/users")

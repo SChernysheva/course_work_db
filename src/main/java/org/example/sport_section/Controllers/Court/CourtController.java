@@ -1,7 +1,7 @@
 //package org.example.sport_section.Controllers.Court;
 //
 //
-//import org.example.sport_section.Models.Court;
+//import org.example.sport_section.Models.Courts.Court;
 //import org.example.sport_section.Services.CourtService.BookingCourtService;
 //import org.example.sport_section.Services.CourtService.CourtService;
 //import org.example.sport_section.Utils.Security.SecurityUtils;

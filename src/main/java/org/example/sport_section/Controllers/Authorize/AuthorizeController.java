@@ -1,6 +1,6 @@
 package org.example.sport_section.Controllers.Authorize;
 
-import org.example.sport_section.Models.UserModelAuthorization;
+import org.example.sport_section.Models.Users.UserModelAuthorization;
 import org.example.sport_section.Services.AuthorizeService.AuthorizeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

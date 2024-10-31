@@ -1,7 +1,6 @@
 package org.example.sport_section.Repositories.Authorize;
 
-import org.example.sport_section.Models.User;
-import org.example.sport_section.Models.UserModelAuthorization;
+import org.example.sport_section.Models.Users.UserModelAuthorization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,18 +1,17 @@
-package org.example.sport_section.front.Views.UserBookings;
+package org.example.sport_section.front.Views.Courts.UserBookings;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import org.example.sport_section.Models.Booking_court;
-import org.example.sport_section.Models.Court;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Courts.Court;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.UserService.UserService;
@@ -21,12 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
 @Route("admin/addBooking")
 public class AddBookingView extends VerticalLayout {
@@ -74,7 +73,8 @@ public class AddBookingView extends VerticalLayout {
         VerticalLayout timeLayout = new VerticalLayout();
 
         final LocalDate[] selectedDate = new LocalDate[1];
-        final Integer[] selectedHour = new Integer[1];
+        final Time[] selectedHour = new Time[1];
+        datePicker.setMin(LocalDate.now());
 
         datePicker.addValueChangeListener(event -> {
             if (courtComboBox.getValue() == null) {
@@ -83,16 +83,16 @@ public class AddBookingView extends VerticalLayout {
             }
             selectedDate[0] = event.getValue();
             if (selectedDate[0] != null) {
-                List<Integer> aviableHours = getAviableHours(courtComboBox.getValue().getId(), selectedDate[0]);
-
+                List<Time> aviableHours = getAviableHours(courtComboBox.getValue().getId(), selectedDate[0]);
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
                 UI.getCurrent().access(() -> {
                     timeLayout.removeAll();
                     timeLayout.add(new Text("Выберите доступное время для " + selectedDate[0]));
-                    for (Integer hour : aviableHours) {
-                        Button timeButton = new Button(hour + ":00");
+                    for (Time hour : aviableHours) {
+                        Button timeButton = new Button(sdf.format(hour));
                         timeButton.addClickListener(e -> {
                             selectedHour[0] = hour;
-                            Notification.show("Выбрано " + hour + ":00", 3000, Notification.Position.MIDDLE);
+                            Notification.show("Выбрано " + sdf.format(hour), 3000, Notification.Position.MIDDLE);
                             timeLayout.getChildren()
                                     .filter(component -> component instanceof Button)
                                     .map(component -> (Button) component)
@@ -113,7 +113,7 @@ public class AddBookingView extends VerticalLayout {
                             return;
                         }
                         timeDialog.close();
-                        Text time = new Text("Выбранное время: " + selectedHour[0] + ":00");
+                        Text time = new Text("Выбранное время: " + sdf.format(selectedHour[0]));
                         content.add(time);
                     });
                     timeLayout.add(ok);
@@ -123,12 +123,6 @@ public class AddBookingView extends VerticalLayout {
             }
         });
 
-        // Получение текущей даты в московском часовом поясе
-        ZoneId moscowZoneId = ZoneId.of("Europe/Moscow");
-        LocalDate currentDateInMoscow = ZonedDateTime.now(moscowZoneId).toLocalDate();
-
-        // Установка минимальной даты в DatePicker
-        datePicker.setMin(currentDateInMoscow);
         Button processButton = new Button("Забронировать", e -> {
             User selectedUser = userComboBox.getValue();
             Court selectedCourt = courtComboBox.getValue();
@@ -157,8 +151,8 @@ public class AddBookingView extends VerticalLayout {
         return content;
     }
 
-    private List<Integer> getAviableHours(int courtId, LocalDate date) {
-        List<Integer> availableHours = new ArrayList<>();
+    private List<Time> getAviableHours(int courtId, LocalDate date) {
+        List<Time> availableHours = new ArrayList<>();
         if (LocalDate.now().isAfter(date)) {
             //todo
         }
@@ -167,15 +161,16 @@ public class AddBookingView extends VerticalLayout {
             LocalTime currentTime = LocalTime.now();
             startHour = Math.max(7, currentTime.getHour() + 1);
         }
-        List<Integer> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
+        List<Time> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
         for (int i = startHour; i <= 22; i++) {
-            if (!bookingHours.contains(i)) {
-                availableHours.add(i);
+            Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
+            if (!bookingHours.contains(currentTime)) {
+                availableHours.add(currentTime);
             }
         }
         return availableHours;
     }
-    private Integer bookCourt(LocalDate date, int hour, int courtId, User user) throws SQLException {
+    private Integer bookCourt(LocalDate date, Time hour, int courtId, User user) throws SQLException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {
             Booking_court bk = new Booking_court(court.get(), user, Date.valueOf(date), hour);

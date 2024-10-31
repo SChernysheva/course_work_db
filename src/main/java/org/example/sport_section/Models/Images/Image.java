@@ -1,4 +1,4 @@
-package org.example.sport_section.Models;
+package org.example.sport_section.Models.Images;
 
 import jakarta.persistence.*;
 

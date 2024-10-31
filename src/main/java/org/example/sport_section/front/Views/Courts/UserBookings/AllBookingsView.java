@@ -1,4 +1,4 @@
-package org.example.sport_section.front.Views.ManageBookings;
+package org.example.sport_section.front.Views.Courts.UserBookings;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -12,33 +12,33 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.DTO.BookingDTO;
-import org.example.sport_section.DTO.BookingsForAdminDTO;
-import org.example.sport_section.Models.Booking_court;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Home.HomePage;
-import org.example.sport_section.front.Views.UserBookings.AddBookingView;
-import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.*;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
-@Route("admin/manageBookings")
-public class ManageBookings  extends HorizontalLayout {
+
+@Route("bookings")
+public class AllBookingsView extends HorizontalLayout {
+    //private Integer userId;
     private UserService userService;
     private BookingCourtService bookingCourtService;
     private final Div loadingSpinner = createLoadingSpinner();
 
     @Autowired
-    public ManageBookings(UserService userService, BookingCourtService bookingCourtService) {
+    public AllBookingsView(UserService userService, BookingCourtService bookingCourtService) {
         this.userService = userService;
         this.bookingCourtService = bookingCourtService;
         add(loadingSpinner);
@@ -47,21 +47,25 @@ public class ManageBookings  extends HorizontalLayout {
         getStyle().setHeight("auto");
         String email = SecurityUtils.getCurrentUserEmail();
         User user = userService.getUserAsync(email).join();
-        List<Booking_court> bookings = bookingCourtService.getBookings().join();
+        List<Booking_court> bookings = bookingCourtService.getBookingsForUserAsync(user.getId()).join();
+        bookings.sort(Comparator.comparing(Booking_court::getDate).thenComparing(Booking_court::getTime).reversed());
         UI.getCurrent().access(() -> {
             addSidebar();
-            remove(loadingSpinner);
             add(loadContent(bookings));
+            remove(loadingSpinner);
         });
+
     }
 
     private VerticalLayout loadContent(List<Booking_court> bookings) {
         VerticalLayout layout = new VerticalLayout();
+        //layout.setAlignItems(Alignment.CENTER);
+        //layout.setJustifyContentMode(JustifyContentMode.CENTER);
         layout.setWidthFull();
         layout.getStyle().set("background-color", "#F2F3F4");
         if (bookings.isEmpty()) {
             layout.setHeightFull();
-            Text text = new Text("пока нет бронирований");
+            Text text = new Text("У вас пока нет бронирований");
             layout.add(text);
             setHeightFull();
             return layout;
@@ -69,11 +73,6 @@ public class ManageBookings  extends HorizontalLayout {
         if (bookings.size() < 5) {
             setHeightFull();
         }
-        Button button = new Button("Добавить бронирование");
-        button.addClickListener(e -> {
-            UI.getCurrent().navigate(AddBookingView.class);
-        });
-        layout.add(button);
         for (var booking : bookings) {
             layout.add(createCourtCard(booking));
         }
@@ -83,7 +82,7 @@ public class ManageBookings  extends HorizontalLayout {
 
     private void addSidebar() {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView(ManageBookings.class, UI.getCurrent());
+        VerticalLayout sidebar = createSidebarView(AllBookingsView.class, UI.getCurrent());
         String email = SecurityUtils.getCurrentUserEmail();
         sidebar.add(createSidebarViewUser(email));
         sidebar.add(getExitButton());
@@ -117,21 +116,16 @@ public class ManageBookings  extends HorizontalLayout {
         card.setHeight("150px"); // Делаем высоту автоматической, чтобы текст не обрезался
         card.setPadding(true); // Устанавливаем отступы внутри карточки
         card.setAlignItems(FlexComponent.Alignment.CENTER); // Центрируем элементы по вертикали
-
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         Text date = new Text(booking.getDate().toString() + "  ");
-        Text hour = new Text(booking.getTime() + ":00  ");
-        Text number = new Text(booking.getCourt().getCourtName() + "  ");
-        Text user = new Text(booking.getUser().getFirst_name() + " " + booking.getUser().getLast_name() + "  ");
-        Text email = new Text(booking.getUser().getEmail() + "  ");
-        Text phone = new Text(booking.getUser().getPhone());
-        card.add(date, hour, number, user, email, phone);
+        Text hour = new Text(sdf.format(booking.getTime()) + "  ");
+        Text number = new Text(booking.getCourt().getCourtName());
+        card.add(date, hour, number);
 
-        ZonedDateTime moscowTime = ZonedDateTime.now(ZoneId.of("Europe/Moscow"));
-        Instant moscowInstant = moscowTime.toInstant();
-        int currentMoscowHour = moscowTime.getHour();
-        Date currentMoscowDate = Date.from(moscowInstant);
-        if (currentMoscowDate.before(booking.getDate()) ||
-                (currentMoscowDate.equals(booking.getDate()) && currentMoscowHour < booking.getTime())) {
+        Date nowDate = java.sql.Date.valueOf(LocalDate.now());
+        Time nowTime = Time.valueOf(LocalTime.now());
+        if (nowDate.before(booking.getDate()) ||
+                (nowDate.equals(booking.getDate()) && nowTime.before(booking.getTime()))) {
             Button cancelButtton = new Button("Отменить бронирование");
             cancelButtton.addClickListener(e -> {
                 cancelBooking(booking);
@@ -230,7 +224,7 @@ public class ManageBookings  extends HorizontalLayout {
         Button cancelButton = new Button("Нет");
         cancelButton.addClickListener(event -> {
             dialog.close(); // Закрываем диалоговое окно
-            UI.getCurrent().navigate(Bookings.class);
+            UI.getCurrent().navigate(AllBookingsView.class);
         });
 
         VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);

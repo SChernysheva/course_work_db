@@ -4,10 +4,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.AllUsers.AllUsersView;
+import org.example.sport_section.front.Views.UsersViews.AllUsersView;
 import org.example.sport_section.front.Views.Home.HomePage;
-import org.example.sport_section.front.Views.ManageBookings.ManageBookings;
-import org.example.sport_section.front.Views.UserBookings.Bookings;
+import org.example.sport_section.front.Views.Courts.ManageBookings.ManageBookingsView;
+import org.example.sport_section.front.Views.Courts.UserBookings.AllBookingsView;
+import org.example.sport_section.front.Views.UsersViews.CoachesView;
 
 public class Sidebar {
 
@@ -30,7 +31,7 @@ public class Sidebar {
                 .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
                 .set("color", "black");
         bookingsButton.addClickListener(e -> {
-            ui.navigate(Bookings.class);
+            ui.navigate(AllBookingsView.class);
         });
         coachesButton.addClickListener(event ->
                 ui.navigate(HomePage.class));
@@ -40,7 +41,7 @@ public class Sidebar {
                 .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
                 .set("color", "black");
         coachesButton.addClickListener(event ->
-                ui.navigate(Bookings.class));
+                ui.navigate(AllBookingsView.class));
         coachesButton.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "10px")
                 .set("border-radius", "8px")
@@ -74,7 +75,7 @@ public class Sidebar {
         if (isUserAdmin()) {
             Button manageBookingsButton = new Button("Все бронирования");
             manageBookingsButton.addClickListener(event ->
-                    ui.navigate(ManageBookings.class)); // Предполагаем, что у вас есть класс ManageBookings
+                    ui.navigate(ManageBookingsView.class)); // Предполагаем, что у вас есть класс ManageBookings
 
             manageBookingsButton.getStyle().set("background-color", "#FFFFFF")
                     .set("padding", "10px")
@@ -83,7 +84,7 @@ public class Sidebar {
                     .set("color", "black");
 
             sidebar.add(manageBookingsButton);
-            if (page.equals(ManageBookings.class)) {
+            if (page.equals(ManageBookingsView.class)) {
                 manageBookingsButton.getStyle().set("background-color", "#E8E8E8");
             }
             Button allUsers = new Button("Все пользователи");
@@ -104,13 +105,13 @@ public class Sidebar {
         if (page.equals(HomePage.class)) {
             homeButton.getStyle().set("background-color", "#E8E8E8");
         }
-        if (page.equals(Bookings.class)) {
+        if (page.equals(AllBookingsView.class)) {
             bookingsButton.getStyle().set("background-color", "#E8E8E8");
         }
-        if (page.equals(Coaches.class)) {
+        if (page.equals(CoachesView.class)) {
             coachesButton.getStyle().set("background-color", "#E8E8E8");
         }
-        if (page.equals(Schedule.class)) {
+        if (page.equals(ScheduleView.class)) {
             scheduleButton.getStyle().set("background-color", "#E8E8E8");
         }
 

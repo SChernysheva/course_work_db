@@ -1,16 +1,12 @@
 package org.example.sport_section.Services.CourtService;
 
-import org.example.sport_section.Models.Court;
+import org.example.sport_section.Models.Courts.Court;
 import org.example.sport_section.Repositories.Courts.ICourtRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

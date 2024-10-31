@@ -1,8 +1,7 @@
-package org.example.sport_section.Services;
+package org.example.sport_section.Services.ImageService;
 
-import org.example.sport_section.Models.CourtImage;
-import org.example.sport_section.Models.Image;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Images.CourtImage;
+import org.example.sport_section.Models.Images.Image;
 import org.example.sport_section.Repositories.Images.ImageCourtRepository;
 import org.example.sport_section.Repositories.Images.ImageRepository;
 import org.springframework.scheduling.annotation.Async;

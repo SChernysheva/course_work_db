@@ -1,6 +1,6 @@
 package org.example.sport_section.Repositories.Images;
 
-import org.example.sport_section.Models.CourtImage;
+import org.example.sport_section.Models.Images.CourtImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

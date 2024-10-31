@@ -11,8 +11,8 @@
 //import com.vaadin.flow.router.Route;
 //import com.vaadin.flow.server.VaadinSession;
 //import jakarta.annotation.security.PermitAll;
-//import org.example.sport_section.Models.Court;
-//import org.example.sport_section.Models.UserModelAuthorization;
+//import org.example.sport_section.Models.Courts.Court;
+//import org.example.sport_section.Models.Users.UserModelAuthorization;
 //import org.example.sport_section.Validators.UserValidator;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.web.client.RestTemplate;

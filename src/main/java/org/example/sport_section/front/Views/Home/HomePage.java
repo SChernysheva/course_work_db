@@ -13,16 +13,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.Court;
+import org.example.sport_section.Models.Courts.Court;
 import org.example.sport_section.Services.CourtService.CourtService;
-import org.example.sport_section.Services.ImageService;
+import org.example.sport_section.Services.ImageService.ImageService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.ImageHelper;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 //import org.example.sport_section.front.Views.Authorize.StartPage;
-import org.example.sport_section.front.Views.ManageBookings.ManageBookings;
-import org.example.sport_section.front.Views.Sidebar;
-import org.example.sport_section.front.Views.UserBookings.Bookings;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -178,7 +175,7 @@ public class HomePage extends HorizontalLayout {
                 .set("border-radius", "10px")
                 .set("overflow", "hidden");    // Обрезает выступающие части
         imageContainer.setSizeFull();
-        org.example.sport_section.Models.Image imageValue = imageService.getImageByPage("home").join();
+        org.example.sport_section.Models.Images.Image imageValue = imageService.getImageByPage("home").join();
         Image image = ImageHelper.createImageFromByteArray(imageValue.getImage_data(), "Описание");
         image.setWidth("100%");
         image.setHeight("100%");

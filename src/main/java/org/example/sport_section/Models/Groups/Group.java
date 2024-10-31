@@ -1,7 +1,9 @@
-package org.example.sport_section.Models;
+package org.example.sport_section.Models.Groups;
 
 
 import jakarta.persistence.*;
+import org.example.sport_section.Models.Users.Coach;
+import org.example.sport_section.Models.Users.User;
 
 import java.util.List;
 

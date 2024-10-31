@@ -1,6 +1,6 @@
 package org.example.sport_section.Services.GroupService;
 
-import org.example.sport_section.Models.Group;
+import org.example.sport_section.Models.Groups.Group;
 import org.example.sport_section.Repositories.GroupRepository.GroupRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

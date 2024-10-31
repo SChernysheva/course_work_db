@@ -1,4 +1,4 @@
-package org.example.sport_section.front.Views.AllUsers;
+package org.example.sport_section.front.Views.UsersViews;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -13,14 +13,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
-import org.example.sport_section.Models.User;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 

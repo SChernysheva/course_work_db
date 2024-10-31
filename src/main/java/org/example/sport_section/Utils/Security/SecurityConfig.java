@@ -1,7 +1,7 @@
 package org.example.sport_section.Utils.Security;
 
-import org.example.sport_section.Models.Admin;
-import org.example.sport_section.Models.UserModelAuthorization;
+import org.example.sport_section.Models.Users.UserModelAuthorization;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Repositories.Authorize.IAuthorizeRepository;
 import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
@@ -15,7 +15,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -84,7 +83,7 @@ public class SecurityConfig {
             if (userEntity.isEmpty()) {
                 throw new UsernameNotFoundException("User not found");
             }
-            org.example.sport_section.Models.User user = userRepository.findByEmail(email);
+            User user = userRepository.findByEmail(email);
 
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("USER"));

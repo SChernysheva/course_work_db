@@ -1,9 +1,7 @@
 package org.example.sport_section.Services.CourtService;
 
-import org.example.sport_section.DTO.BookingsForAdminDTO;
-import org.example.sport_section.Models.Booking_court;
+import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Repositories.BookingCourts.IBookingCourtsRepository;
-import org.example.sport_section.DTO.BookingDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -11,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +25,7 @@ public class BookingCourtService {
     }
 
     @Async
-    public CompletableFuture<List<Integer>> getBookingTimeForCourtAsync(long id, LocalDate date) {
+    public CompletableFuture<List<Time>> getBookingTimeForCourtAsync(long id, LocalDate date) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date)));
     }
     @Async
@@ -59,7 +58,7 @@ public class BookingCourtService {
 //    }
 
     @Transactional
-    public CompletableFuture<Booking_court> findBookingAsync(Long courtId, int time, LocalDate date) {
+    public CompletableFuture<Booking_court> findBookingAsync(Long courtId, Time time, LocalDate date) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByCourtIdAndBookingTime(courtId, Date.valueOf(date), time));
     }
 

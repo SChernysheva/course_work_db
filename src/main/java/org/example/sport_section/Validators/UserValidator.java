@@ -1,7 +1,5 @@
 package org.example.sport_section.Validators;
 
-import org.example.sport_section.Models.User;
-
 import java.util.regex.Pattern;
 
 public class UserValidator {
