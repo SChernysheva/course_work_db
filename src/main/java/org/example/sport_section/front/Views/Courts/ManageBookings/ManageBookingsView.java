@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
@@ -36,6 +37,7 @@ public class ManageBookingsView extends HorizontalLayout {
     private UserService userService;
     private BookingCourtService bookingCourtService;
     private final Div loadingSpinner = createLoadingSpinner();
+    private User user;
 
     @Autowired
     public ManageBookingsView(UserService userService, BookingCourtService bookingCourtService) {
@@ -43,12 +45,14 @@ public class ManageBookingsView extends HorizontalLayout {
         this.bookingCourtService = bookingCourtService;
         add(loadingSpinner);
         setPadding(false);
+        String email = SecurityUtils.getCurrentUserEmail();
+        user = userService.getUserAsync(email).join().get();
         getStyle().set("background-color", "#F2F3F4");
         getStyle().setHeight("auto");
         List<Booking_court> bookings = bookingCourtService.getBookings().join();
         bookings.sort(Comparator.comparing(Booking_court::getDate).thenComparing(Booking_court::getTime).reversed());
         UI.getCurrent().access(() -> {
-            addSidebar();
+            add(createSidebarView(ManageBookingsView.class, UI.getCurrent(), user));
             remove(loadingSpinner);
             add(loadContent(bookings));
         });
@@ -80,14 +84,6 @@ public class ManageBookingsView extends HorizontalLayout {
         return layout;
     }
 
-    private void addSidebar() {
-        // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView(ManageBookingsView.class, UI.getCurrent());
-        String email = SecurityUtils.getCurrentUserEmail();
-        sidebar.add(createSidebarViewUser(email));
-        sidebar.add(getExitButton());
-        add(sidebar);
-    }
 
 
     private Div createLoadingSpinner() {
@@ -141,70 +137,6 @@ public class ManageBookingsView extends HorizontalLayout {
         return card;
     }
 
-    private VerticalLayout createSidebarViewUser(String userEmail) {
-        VerticalLayout sidebar = new VerticalLayout();
-        // Создание контейнера с информацией о пользователе
-        Div userContainer = new Div();
-        userContainer.getStyle().set("background-color", "lightgray");
-        userContainer.getStyle().set("padding", "5px");
-
-        // Добавление текста с информацией о пользователе
-        Span userText = new Span("Пользователь: " + userEmail);
-        userContainer.add(userText);
-
-        // Добавление контейнера с информацией о пользователе на боковую панель
-        sidebar.add(userContainer);
-        sidebar.setAlignItems(Alignment.CENTER); // Центрирование по вертикали
-        sidebar.setWidth("200px"); // Задание ширины боковой панели
-
-        return sidebar;
-    }
-
-    private Button getExitButton() {
-        Button exitButton = new Button("Выйти");
-
-        exitButton.getStyle().set("background-color", "orange");
-        exitButton.getStyle().set("color", "white");
-        exitButton.getStyle().set("font-size", "12px");
-        exitButton.getStyle().set("border", "none");
-        exitButton.getStyle().set("padding", "5px 10px");
-
-        exitButton.addClickListener(event -> {
-            exit();
-        });
-        return exitButton;
-    }
-    private void exit() {
-        // Создаём диалоговое окно
-        Dialog dialog = new Dialog();
-
-        Text text = new Text("Вы точно хотите выйти?");
-        Button proveButton = new Button("Выйти");
-        proveButton.getStyle().set("background-color", "lightgray");
-        proveButton.getStyle().set("color", "white");
-        proveButton.addClickListener(event -> {
-            SecurityUtils.deleteAuth();
-            VaadinSession.getCurrent().close(); // Закройте текущую сессию
-            // UI.getCurrent().navigate(StartPage.class);
-        });
-
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(event -> {
-            dialog.close(); // Закрываем диалоговое окно
-            // Можем (необязательно) добавить логику возврата на домашнюю страницу
-            UI.getCurrent().navigate(HomePage.class);
-        });
-
-        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
-        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
-        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
-        layout.setSizeFull(); // Занять всю доступную область
-
-        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
-        dialog.setWidth("400px"); // Настройка ширины диалогового окна
-        dialog.setHeight("200px"); // Настройка высоты диалогового окна
-        dialog.open(); // Открываем диалоговое окно
-    }
     private void cancelBooking(Booking_court booking) {
         // Создаём диалоговое окно
         Dialog dialog = new Dialog();

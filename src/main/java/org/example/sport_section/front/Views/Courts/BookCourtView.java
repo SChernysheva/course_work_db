@@ -207,24 +207,7 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
     }
 
     private List<Time> getAviableHours(int courtId, LocalDate date) {
-        List<Time> availableHours = new ArrayList<>();
-        if (LocalDate.now().isAfter(date)) {
-            //todo
-        }
-        int startHour = 7;
-        if (date.isEqual(LocalDate.now())) {
-            LocalTime currentTime = LocalTime.now();
-            startHour = Math.max(7, currentTime.getHour() + 1);
-        }
-        List<Time> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
-        System.out.println("booking hours: " + bookingHours);
-        for (int i = startHour; i <= 22; i++) {
-            Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
-            if (!bookingHours.contains(currentTime)) {
-                availableHours.add(currentTime);
-            }
-        }
-        return availableHours;
+        return bookingCourtService.getAviavleTimeForCourtAsync(courtId, date).join();
     }
 
     private void bookCourt(LocalDate date, Time hour, int courtId, User user) throws IllegalStateException {

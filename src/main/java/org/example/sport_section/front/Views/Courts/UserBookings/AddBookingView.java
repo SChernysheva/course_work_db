@@ -84,7 +84,8 @@ public class AddBookingView extends VerticalLayout {
             }
             selectedDate[0] = event.getValue();
             if (selectedDate[0] != null) {
-                List<Time> aviableHours = getAviableHours(courtComboBox.getValue().getId(), selectedDate[0]);
+                List<Time> aviableHours = bookingCourtService.getAviavleTimeForCourtAsync(courtComboBox.getValue().getId(),
+                        selectedDate[0]).join();
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
                 UI.getCurrent().access(() -> {
                     timeLayout.removeAll();
@@ -150,25 +151,6 @@ public class AddBookingView extends VerticalLayout {
         return content;
     }
 
-    private List<Time> getAviableHours(int courtId, LocalDate date) {
-        List<Time> availableHours = new ArrayList<>();
-        if (LocalDate.now().isAfter(date)) {
-            //todo
-        }
-        int startHour = 7;
-        if (date.isEqual(LocalDate.now())) {
-            LocalTime currentTime = LocalTime.now();
-            startHour = Math.max(7, currentTime.getHour() + 1);
-        }
-        List<Time> bookingHours = bookingCourtService.getBookingTimeForCourtAsync(courtId, date).join();
-        for (int i = startHour; i <= 22; i++) {
-            Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
-            if (!bookingHours.contains(currentTime)) {
-                availableHours.add(currentTime);
-            }
-        }
-        return availableHours;
-    }
     private void bookCourt(LocalDate date, Time hour, int courtId, User user) throws IllegalStateException {
         Optional<Court> court = courtService.getCourtByIdAsync(courtId).join();
         if (court.isPresent()) {

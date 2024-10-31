@@ -60,23 +60,8 @@ public class HomePage extends HorizontalLayout {
         List<Court> courts = courtService.getCourtsAsync().join();
         UI.getCurrent().access(() -> {
             remove(loadingSpinner);
-            loadContent(courts, userEmail, user.getId(), imageContainer);
+            loadContent(courts, userEmail, user, imageContainer);
         });
-    }
-
-    private Button getExitButton() {
-        Button exitButton = new Button("Выйти");
-
-        exitButton.getStyle().set("background-color", "orange");
-        exitButton.getStyle().set("color", "white");
-        exitButton.getStyle().set("font-size", "12px");
-        exitButton.getStyle().set("border", "none");
-        exitButton.getStyle().set("padding", "5px 10px");
-
-        exitButton.addClickListener(event -> {
-            exit();
-        });
-        return exitButton;
     }
     private VerticalLayout createSidebarViewUser(String userEmail, int userId) {
         VerticalLayout sidebar = new VerticalLayout();
@@ -96,40 +81,10 @@ public class HomePage extends HorizontalLayout {
 
         return sidebar;
     }
-    private void exit() {
-        // Создаём диалоговое окно
-        Dialog dialog = new Dialog();
 
-        Text text = new Text("Вы точно хотите выйти?");
-        Button proveButton = new Button("Выйти");
-        proveButton.getStyle().set("background-color", "lightgray");
-        proveButton.getStyle().set("color", "white");
-        proveButton.addClickListener(event -> {
-            SecurityUtils.deleteAuth();
-            VaadinSession.getCurrent().close(); // Закройте текущую сессию
-            // UI.getCurrent().navigate(StartPage.class);
-        });
-
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(event -> {
-            dialog.close(); // Закрываем диалоговое окно
-            UI.getCurrent().navigate(HomePage.class);
-        });
-
-        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
-        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
-        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
-        layout.setSizeFull(); // Занять всю доступную область
-
-        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
-        dialog.setWidth("400px"); // Настройка ширины диалогового окна
-        dialog.setHeight("200px"); // Настройка высоты диалогового окна
-        dialog.open(); // Открываем диалоговое окно
-    }
-
-    private void loadContent(List<Court> courts, String userEmail, int userId, Div imageContainer) {
+    private void loadContent(List<Court> courts, String userEmail, User user, Div imageContainer) {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView(HomePage.class, UI.getCurrent());
+        VerticalLayout sidebar = createSidebarView(HomePage.class, UI.getCurrent(), user);
         Div overlay = getOverlay();
 
         cardLayout.setWidthFull();
@@ -142,18 +97,6 @@ public class HomePage extends HorizontalLayout {
         cardLayout.setAlignItems(Alignment.CENTER); // Центруем по горизонтали
         overlay.add(cardLayout);
         imageContainer.add(overlay);
-        sidebar.add(createSidebarViewUser(userEmail, userId));
-        Button update = new Button("Изменить мои контакты");
-        update.getStyle().set("background-color", "#888888")  // Серый фон кнопки
-                .set("color", "#ffffff")               // Белый текст
-                .set("border", "none")                 // Убираем рамку
-                .set("padding", "10px 20px")           // Отступы
-                .set("border-radius", "5px");
-        update.addClickListener(event -> {
-            updateUser(userId);
-        });
-        sidebar.add(update);
-        sidebar.add(getExitButton());
         add(sidebar);
         add(imageContainer);
         // Обновление списков
@@ -231,10 +174,6 @@ public class HomePage extends HorizontalLayout {
         card.addClickListener(event -> goToCourtInfo(court));
         div.add(card);
         return div;
-    }
-
-    public void updateUser(int userId) {
-        UI.getCurrent().navigate("user/update/" + userId);
     }
 
     private Div createLoadingSpinner() {

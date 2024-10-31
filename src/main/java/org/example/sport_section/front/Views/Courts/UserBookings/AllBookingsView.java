@@ -38,16 +38,18 @@ public class AllBookingsView extends HorizontalLayout {
     private UserService userService;
     private BookingCourtService bookingCourtService;
     private final Div loadingSpinner = createLoadingSpinner();
+    private User user;
 
     @Autowired
     public AllBookingsView(UserService userService, BookingCourtService bookingCourtService) {
         this.userService = userService;
         this.bookingCourtService = bookingCourtService;
         add(loadingSpinner);
+        String email = SecurityUtils.getCurrentUserEmail();
+        user = userService.getUserAsync(email).join().get();
         setPadding(false);
         getStyle().set("background-color", "#F2F3F4");
         getStyle().setHeight("auto");
-        String email = SecurityUtils.getCurrentUserEmail();
         Optional<User> userOpt = userService.getUserAsync(email).join();
         if (!userOpt.isPresent()) {
             //todo
@@ -88,10 +90,7 @@ public class AllBookingsView extends HorizontalLayout {
 
     private void addSidebar() {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView(AllBookingsView.class, UI.getCurrent());
-        String email = SecurityUtils.getCurrentUserEmail();
-        sidebar.add(createSidebarViewUser(email));
-        sidebar.add(getExitButton());
+        VerticalLayout sidebar = createSidebarView(AllBookingsView.class, UI.getCurrent(), user);
         add(sidebar);
     }
 

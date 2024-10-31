@@ -2,6 +2,7 @@ package org.example.sport_section.Models.Groups;
 
 import jakarta.persistence.*;
 import org.example.sport_section.Models.Courts.Court;
+import org.example.sport_section.Models.Weekday.Weekday;
 
 import java.sql.Time;
 
@@ -11,7 +12,6 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String day_week;
     private Time time;
 
     @ManyToOne
@@ -21,6 +21,19 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "court_id")
     private Court court;
+
+    @ManyToOne
+    @JoinColumn(name = "day_week")
+    private Weekday weekday;
+
+    public Weekday getWeekday() {
+        return weekday;
+    }
+
+    public void setWeekday(Weekday weekday) {
+        this.weekday = weekday;
+    }
+
 
     public Court getCourt() {
         return court;
@@ -48,14 +61,6 @@ public class Schedule {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getDay_week() {
-        return day_week;
-    }
-
-    public void setDay_week(String day_week) {
-        this.day_week = day_week;
     }
 
     public Time getTime() {

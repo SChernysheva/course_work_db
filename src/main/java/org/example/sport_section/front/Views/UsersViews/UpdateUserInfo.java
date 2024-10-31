@@ -88,6 +88,7 @@ public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<In
 
     private void apply(String email, String phone) {
         add(loadingSpinner);
+        String oldEmail = user.getEmail();
         if (email.equals(user.getEmail()) && phone.equals(user.getPhone())) {
             remove(loadingSpinner);
             return;
@@ -106,12 +107,13 @@ public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<In
             String resValidate = UserValidator.validatePhone(phone);
             if (resValidate != null) {
                 UI.getCurrent().access(() -> Notification.show("Ошибка: " + resValidate, 3000, Notification.Position.MIDDLE));
+                remove(loadingSpinner);
                 return;
             } else {
                 user.setPhone(phone);
             }
         }
-        updateUser(user);
+        updateUser(user, oldEmail);
     }
 
     private Div createLoadingSpinner() {
@@ -127,17 +129,18 @@ public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<In
                 .set("color", "#666"); // Темно-серый цвет текста
         return spinner;
     }
-    private void updateUser(User user) {
+    private void updateUser(User user, String oldEmail) {
         UI.getCurrent().access(() -> Notification.show("Выполняется", 1000, Notification.Position.MIDDLE));
         try {
-            userService.updateUser(user.getId(), user).join();
+            userService.updateUser(user.getId(), user, oldEmail).join();
             UI.getCurrent().access(() -> {
                 Notification.show("Готово", 1000, Notification.Position.MIDDLE);
                 UI.getCurrent().getPage().reload();
             });
         } catch (CompletionException ex) {
             UI.getCurrent().access( () -> {
-                Notification.show("Ошибка: " + ex.getMessage(), 2000, Notification.Position.MIDDLE);
+                Notification.show("Ошибка: " + ex.getCause().getMessage(), 3000, Notification.Position.MIDDLE);
+                remove(loadingSpinner);
             });
         }
 

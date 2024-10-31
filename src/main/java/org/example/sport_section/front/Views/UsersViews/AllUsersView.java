@@ -28,6 +28,7 @@ public class AllUsersView extends HorizontalLayout {
     private final UserService userService;
     private final Div loadingSpinner = createLoadingSpinner();
     private List<User> allUsers;
+    private User user;
 
     @Autowired
     public AllUsersView(UserService userService) {
@@ -37,6 +38,8 @@ public class AllUsersView extends HorizontalLayout {
         getStyle().set("background-color", "#F2F3F4");
         getStyle().setHeight("auto");
         allUsers = userService.getUsersAsync().join();
+        String email = SecurityUtils.getCurrentUserEmail();
+        user = userService.getUserAsync(email).join().get();
 
         UI.getCurrent().access(() -> {
             addSidebar();
@@ -92,70 +95,10 @@ public class AllUsersView extends HorizontalLayout {
 
     private void addSidebar() {
         // Создаем и добавляем боковую панель
-        VerticalLayout sidebar = createSidebarView(AllUsersView.class, UI.getCurrent());
-        String email = SecurityUtils.getCurrentUserEmail();
-        sidebar.add(createSidebarViewUser(email));
-        sidebar.add(getExitButton());
+        VerticalLayout sidebar = createSidebarView(AllUsersView.class, UI.getCurrent(), user);
         add(sidebar);
     }
 
-    // Остальные методы...
-
-    private Button getExitButton() {
-        Button exitButton = new Button("Выйти");
-        exitButton.addClickListener(e -> {
-            exit();
-        });
-        return exitButton;
-    }
-    private void exit() {
-        // Создаём диалоговое окно
-        Dialog dialog = new Dialog();
-
-        Text text = new Text("Вы точно хотите выйти?");
-        Button proveButton = new Button("Выйти");
-        proveButton.getStyle().set("background-color", "lightgray");
-        proveButton.getStyle().set("color", "white");
-        proveButton.addClickListener(event -> {
-            SecurityUtils.deleteAuth();
-            VaadinSession.getCurrent().close(); // Закройте текущую сессию
-            // UI.getCurrent().navigate(StartPage.class);
-        });
-
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(event -> {
-            dialog.close(); // Закрываем диалоговое окно
-            // Можем (необязательно) добавить логику возврата на домашнюю страницу
-            UI.getCurrent().navigate(AllUsersView.class);
-        });
-
-        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
-        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
-        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
-        layout.setSizeFull(); // Занять всю доступную область
-
-        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
-        dialog.setWidth("400px"); // Настройка ширины диалогового окна
-        dialog.setHeight("200px"); // Настройка высоты диалогового окна
-        dialog.open(); // Открываем диалоговое окно
-    }
-    private VerticalLayout createSidebarViewUser(String userEmail) {
-        VerticalLayout sidebar = new VerticalLayout();
-        // Создание контейнера с информацией о пользователе
-        Div userContainer = new Div();
-        userContainer.getStyle().set("background-color", "lightgray");
-        userContainer.getStyle().set("padding", "5px");
-
-        // Добавление текста с информацией о пользователе
-        Span userText = new Span("Пользователь: " + userEmail);
-        userContainer.add(userText);
-        // Добавление контейнера с информацией о пользователе на боковую панель
-        sidebar.add(userContainer);
-        sidebar.setAlignItems(Alignment.CENTER); // Центрирование по вертикали
-        sidebar.setWidth("200px"); // Задание ширины боковой панели
-
-        return sidebar;
-    }
     private HorizontalLayout createUserCard(User user) {
         HorizontalLayout card = new HorizontalLayout();
         card.getStyle().set("background-color", "#FFFFFF")

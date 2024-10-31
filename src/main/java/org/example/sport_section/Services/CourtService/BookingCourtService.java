@@ -4,7 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.example.sport_section.Exceptions.NotFoundException;
 import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.Courts.Booking_court;
+import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Repositories.BookingCourts.IBookingCourtsRepository;
+import org.example.sport_section.Repositories.IScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -15,7 +17,8 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -23,15 +26,52 @@ import java.util.concurrent.CompletionException;
 public class BookingCourtService {
 
     private IBookingCourtsRepository bookingCourtsRepository;
+    private IScheduleRepository scheduleRepository;
 
     @Autowired
-    BookingCourtService(IBookingCourtsRepository bookingCourtsRepository) {
+    BookingCourtService(IBookingCourtsRepository bookingCourtsRepository, IScheduleRepository scheduleRepository) {
         this.bookingCourtsRepository = bookingCourtsRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     @Async
-    public CompletableFuture<List<Time>> getBookingTimeForCourtAsync(long id, LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date)));
+    public CompletableFuture<List<Time>> getBookingTimeForCourtAsync(int id, LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            String dayweek = date.getDayOfWeek().toString().toLowerCase();
+            List<Time> bookBySchedule = scheduleRepository.getScheduleOnWeekDayName(dayweek, id).stream().
+                    map(Schedule::getTime).toList();
+            List<Time> booksByUsers = bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date));
+            Set<Time> res = new HashSet<>(booksByUsers);
+            res.addAll(bookBySchedule);
+            return new ArrayList<>(res);
+        });
+    }
+
+    @Async
+    public CompletableFuture<List<Time>> getAviavleTimeForCourtAsync(int id, LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            String dayweek = date.getDayOfWeek().toString().toLowerCase();
+            List<Time> bookBySchedule = scheduleRepository.getScheduleOnWeekDayName(dayweek, id).stream().
+                    map(Schedule::getTime).toList();
+            List<Time> booksByUsers = bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date));
+            Set<Time> resBook = new HashSet<>(booksByUsers);
+            resBook.addAll(bookBySchedule);
+            System.out.println(booksByUsers);
+            System.out.println(bookBySchedule);
+            int startHour = 7;
+            if (date.isEqual(LocalDate.now())) {
+                LocalTime currentTime = LocalTime.now();
+                startHour = Math.max(7, currentTime.getHour() + 1);
+            }
+            ArrayList<Time> res = new ArrayList<>();
+            for (int i = startHour; i <= 22; i++) {
+                Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
+                if (!resBook.contains(currentTime)) {
+                    res.add(currentTime);
+                }
+            }
+            return res;
+        });
     }
 
     @Async
@@ -43,7 +83,7 @@ public class BookingCourtService {
     public CompletableFuture<List<Booking_court>> getBookingsForUserAsync(long userId) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByUserId(userId));
     }
-    
+
     @Transactional
     @Async
     public CompletableFuture<Booking_court> addBookingTimeForCourt(Booking_court bk) throws CompletionException {

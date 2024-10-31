@@ -103,13 +103,14 @@ public class UserService {
     }
 
     @Async
-    public CompletableFuture<User> updateUser(int id, User updatedUser) throws CompletionException {
+    public CompletableFuture<User> updateUser(int id, User updatedUser, String oldEmail) throws CompletionException {
         updatedUser.setId(id);
         return CompletableFuture.supplyAsync(() -> {
             if (!userRepository.existsById(id)) {
                 throw new IllegalStateException("Пользователь не найдем");
             }
-            if (userRepository.findByEmail(updatedUser.getEmail()).isPresent()) {
+            Optional<User> existingEmail = userRepository.findByEmail(updatedUser.getEmail());
+            if (existingEmail.isPresent() && !updatedUser.getEmail().equals(oldEmail)) {
                 throw new IllegalStateException("Пользователь с такой почтой уже существует");
             }
             return userRepository.save(updatedUser);
