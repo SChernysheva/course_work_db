@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/manageBookings").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -69,7 +69,7 @@ public class SecurityConfig {
                         })
                 )
                 .logout(Customizer.withDefaults());
-        // Добавляем JwtRequestFilter в качестве фильтра
+
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
