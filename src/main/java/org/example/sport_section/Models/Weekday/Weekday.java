@@ -1,6 +1,9 @@
 package org.example.sport_section.Models.Weekday;
 
 import jakarta.persistence.*;
+import org.example.sport_section.Models.Groups.Schedule;
+
+import java.util.List;
 
 @Entity
 @Table(name = "weekdays")
@@ -14,6 +17,28 @@ public class Weekday {
 
     @Column(name = "weekday")
     private String weekday;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "weekday")
+    private List<Schedule> schedules;
+
+    @Column(name = "num_of_day")
+    private int numOfDay;
+
+    public int getNumOfDay() {
+        return numOfDay;
+    }
+
+    public void setNumOfDay(int numOfDay) {
+        this.numOfDay = numOfDay;
+    }
+
+    public List<Schedule> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(List<Schedule> schedules) {
+        this.schedules = schedules;
+    }
 
     public int getId() {
         return id;

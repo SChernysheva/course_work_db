@@ -11,6 +11,7 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.checkerframework.checker.units.qual.N;
 import org.example.sport_section.Models.Users.User;
@@ -22,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.xml.validation.Validator;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
-
+@PageTitle("Обновление контактов")
 @Route("user/update")
 public class UpdateUserInfo extends VerticalLayout implements HasUrlParameter<Integer> {
 

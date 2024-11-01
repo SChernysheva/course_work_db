@@ -101,7 +101,7 @@ public class BookingCourtService {
     public CompletableFuture<Void> deleteBookingAsync(int id) throws CompletionException {
         return CompletableFuture.runAsync(() -> {
             if (!bookingCourtsRepository.existsById(id)) {
-                throw new EntityNotFoundException("Booking with id " + id + " not found.");
+                throw new EntityNotFoundException("Этого бронирования уже нет.");
             }
             bookingCourtsRepository.deleteById(id);
         }).handle((result, ex) -> {

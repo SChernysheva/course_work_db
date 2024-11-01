@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Court;
@@ -30,7 +31,7 @@ import java.util.Optional;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
-
+@PageTitle("Забронировать корт")
 @Route("")
 public class HomePage extends HorizontalLayout {
     private final CourtService courtService;

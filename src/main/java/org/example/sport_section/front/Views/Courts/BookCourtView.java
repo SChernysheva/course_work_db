@@ -11,10 +11,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Courts.Court;
 import org.example.sport_section.Models.Images.CourtImage;
@@ -38,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
+@PageTitle("Добавить бронирование")
 @Route("courts/info")
 public class BookCourtView extends HorizontalLayout implements HasUrlParameter<String> {
     private final Div loadingSpinner = createLoadingSpinner();

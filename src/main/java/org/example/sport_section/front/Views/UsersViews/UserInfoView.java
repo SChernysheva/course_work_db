@@ -13,17 +13,19 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Groups.Group;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.GroupService.GroupService;
 import org.example.sport_section.Services.UserService.UserService;
+import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.CompletionException;
-
+@PageTitle("Информация о пользователе")
 @Route("admin/users/info")
 public class UserInfoView extends VerticalLayout implements HasUrlParameter<Integer> {
     private int userId;
@@ -64,6 +66,12 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         userInfoLayout.add(new Span("Фамилия: " + user.getLast_name()));
         userInfoLayout.add(new Span("Телефон: " + user.getPhone()));
         userInfoLayout.add(new Span("Почта: " + user.getEmail()));
+        userInfoLayout.add(new Text("Должности: "));
+        userInfoLayout.add(new Text("Пользователь  "));
+        if (user.getCoach() != null )userInfoLayout.add(new Text("Тренер  "));
+        if (user.getAdmin() != null )userInfoLayout.add(new Text("Администратор  "));
+
+
         userInfoLayout.add(new Span("Группа: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getAllInfo())));
         userInfoLayout.add(new Span("Тренер в группе: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getCoach().getUser().getLast_name())));
 

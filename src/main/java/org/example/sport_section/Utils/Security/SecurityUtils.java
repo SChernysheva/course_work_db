@@ -6,7 +6,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SecurityUtils {
 
@@ -45,6 +48,21 @@ public class SecurityUtils {
                         .anyMatch(role -> role.getAuthority().equals("ADMIN")))
                 .orElse(false);
     }
+    public static boolean isCoach() {
+        return getUserRoles().map(roles -> roles.stream()
+                        .anyMatch(role -> role.getAuthority().equals("COACH")))
+                .orElse(false);
+    }
+
+    public static List<String> getAllUserRoles() {
+        return getUserRoles()
+                .map(roles -> roles.stream()
+                        .map(role -> role.getAuthority())
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+
 
 }
 

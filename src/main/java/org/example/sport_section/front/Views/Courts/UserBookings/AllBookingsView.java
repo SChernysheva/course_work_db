@@ -10,6 +10,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Booking_court;
@@ -31,7 +32,7 @@ import java.util.concurrent.CompletionException;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
 
-
+@PageTitle("Все бронирования")
 @Route("bookings")
 public class AllBookingsView extends HorizontalLayout {
     //private Integer userId;

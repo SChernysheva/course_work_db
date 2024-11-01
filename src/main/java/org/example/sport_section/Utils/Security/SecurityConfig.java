@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -93,7 +93,9 @@ public class SecurityConfig {
             if (user.getAdmin() != null) {
                 authorities.add(new SimpleGrantedAuthority("ADMIN"));
             }
-
+            if (user.getCoach() != null) {
+                authorities.add(new SimpleGrantedAuthority("COACH"));
+            }
             return new org.springframework.security.core.userdetails.User(
                     userEntity.get().getEmail(),
                     userEntity.get().getHashPassword(),

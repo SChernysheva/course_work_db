@@ -16,8 +16,8 @@ public interface IScheduleRepository extends JpaRepository<Schedule, Integer> {
     @Query("SELECT s FROM Schedule s WHERE s.weekday.name = :name AND s.court.id = :courtId")
     public List<Schedule> getScheduleOnWeekDayName(@Param("name") String name, @Param("courtId") int courtId);
 
-//    @Query("SELECT s FROM Schedule s WHERE s.weekday.weekday = :weekday")
-//    public Optional<Schedule> getScheduleOnWeekDay(String weekday);
+    @Query(value = "SELECT s.weekday, GROUP_CONCAT(s) as schedules FROM Schedule s WHERE s.court_id = :courtId GROUP BY s.weekday", nativeQuery = true)
+    List<Object[]> getGroupedSchedulesByWeekday(@Param("courtId") int courtId);
 
 }
 

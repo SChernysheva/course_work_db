@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Users.User;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import static org.example.sport_section.front.Views.Sidebar.createSidebarView;
-
+@PageTitle("Все пользователи")
 @Route("admin/allUsers")
 public class AllUsersView extends HorizontalLayout {
     private final UserService userService;

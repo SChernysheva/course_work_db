@@ -8,6 +8,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Courts.Court;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
-
+@PageTitle("Добавить бронирование")
 @Route("admin/addBooking")
 public class AddBookingView extends VerticalLayout {
     private final UserService userService;
