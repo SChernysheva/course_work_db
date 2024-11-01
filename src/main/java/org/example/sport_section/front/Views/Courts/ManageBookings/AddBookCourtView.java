@@ -1,4 +1,4 @@
-package org.example.sport_section.front.Views.Courts;
+package org.example.sport_section.front.Views.Courts.ManageBookings;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -26,18 +26,16 @@ import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 @PageTitle("Добавить бронирование")
 @Route("courts/info")
-public class BookCourtView extends HorizontalLayout implements HasUrlParameter<String> {
+public class AddBookCourtView extends HorizontalLayout implements HasUrlParameter<String> {
     private final Div loadingSpinner = createLoadingSpinner();
     private final CourtService courtService;
     private final UserService userService;
@@ -46,8 +44,8 @@ public class BookCourtView extends HorizontalLayout implements HasUrlParameter<S
     private int courtId;
 
     @Autowired
-    public BookCourtView(CourtService courtService, UserService userService,
-                         BookingCourtService bookingCourtService, ImageService imageService) {
+    public AddBookCourtView(CourtService courtService, UserService userService,
+                            BookingCourtService bookingCourtService, ImageService imageService) {
         this.imageService = imageService;
         this.courtService = courtService;
         this.userService = userService;

@@ -2,8 +2,8 @@ package org.example.sport_section.Services.ScheduleService;
 
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Models.Weekday.Weekday;
-import org.example.sport_section.Repositories.IScheduleRepository;
-import org.example.sport_section.Repositories.IWeekdayRepository;
+import org.example.sport_section.Repositories.ScheduleRepository.IScheduleRepository;
+import org.example.sport_section.Repositories.WeekdayRepository.IWeekdayRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

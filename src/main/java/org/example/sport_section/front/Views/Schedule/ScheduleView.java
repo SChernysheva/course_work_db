@@ -1,12 +1,9 @@
-package org.example.sport_section.front.Views;
+package org.example.sport_section.front.Views.Schedule;
 
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -14,24 +11,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
-import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Models.Weekday.Weekday;
 import org.example.sport_section.Services.ScheduleService.ScheduleService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.Courts.ScheduleCourtsAdmin;
-import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 

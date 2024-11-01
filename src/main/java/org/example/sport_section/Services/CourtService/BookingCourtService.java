@@ -7,15 +7,13 @@ import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Repositories.BookingCourts.IBookingCourtsRepository;
-import org.example.sport_section.Repositories.IScheduleRepository;
+import org.example.sport_section.Repositories.ScheduleRepository.IScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Book;
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;

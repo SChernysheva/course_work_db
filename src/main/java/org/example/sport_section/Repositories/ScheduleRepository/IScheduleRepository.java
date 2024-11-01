@@ -1,7 +1,6 @@
-package org.example.sport_section.Repositories;
+package org.example.sport_section.Repositories.ScheduleRepository;
 
 import org.example.sport_section.Models.Groups.Schedule;
-import org.example.sport_section.Models.Weekday.Weekday;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Time;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface IScheduleRepository extends JpaRepository<Schedule, Integer> {

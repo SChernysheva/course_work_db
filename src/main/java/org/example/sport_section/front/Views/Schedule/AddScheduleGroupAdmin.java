@@ -1,4 +1,4 @@
-package org.example.sport_section.front.Views;
+package org.example.sport_section.front.Views.Schedule;
 
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.UI;
@@ -11,10 +11,8 @@ import org.example.sport_section.Models.Courts.Court;
 import org.example.sport_section.Models.Groups.Group;
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Models.Users.Coach;
-import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Models.Weekday.Weekday;
-import org.example.sport_section.Repositories.IWeekdayRepository;
-import org.example.sport_section.Services.CoachService;
+import org.example.sport_section.Services.CoachService.CoachService;
 import org.example.sport_section.Services.CourtService.CourtService;
 import org.example.sport_section.Services.GroupService.GroupService;
 import org.example.sport_section.Services.ScheduleService.ScheduleService;

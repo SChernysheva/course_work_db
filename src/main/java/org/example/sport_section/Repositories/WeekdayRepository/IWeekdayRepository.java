@@ -1,4 +1,4 @@
-package org.example.sport_section.Repositories;
+package org.example.sport_section.Repositories.WeekdayRepository;
 
 import org.example.sport_section.Models.Weekday.Weekday;
 import org.springframework.data.jpa.repository.JpaRepository;

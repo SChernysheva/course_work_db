@@ -1,4 +1,4 @@
-package org.example.sport_section.front.Views.Courts;
+package org.example.sport_section.front.Views.Schedule;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -10,19 +10,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import org.example.sport_section.DTO.CourtBookingDTO;
 import org.example.sport_section.Models.Courts.Court;
-import org.example.sport_section.Models.Groups.Schedule;
-import org.example.sport_section.Models.Weekday.Weekday;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.CourtService.CourtService;
-import org.example.sport_section.front.Views.ScheduleView;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Route("admin/scheduleCourts")
 public class ScheduleCourtsAdmin extends VerticalLayout {

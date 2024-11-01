@@ -1,4 +1,4 @@
-package org.example.sport_section.Repositories;
+package org.example.sport_section.Repositories.CoachRepository;
 
 import org.example.sport_section.Models.Users.Coach;
 import org.springframework.data.jpa.repository.JpaRepository;

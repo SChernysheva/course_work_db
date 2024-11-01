@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Utils.Security.SecurityUtils;
+import org.example.sport_section.front.Views.Schedule.ScheduleView;
 import org.example.sport_section.front.Views.UsersViews.AllUsersView;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.example.sport_section.front.Views.Courts.ManageBookings.ManageBookingsView;

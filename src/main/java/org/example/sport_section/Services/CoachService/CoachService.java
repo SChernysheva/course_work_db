@@ -1,7 +1,7 @@
-package org.example.sport_section.Services;
+package org.example.sport_section.Services.CoachService;
 
 import org.example.sport_section.Models.Users.Coach;
-import org.example.sport_section.Repositories.CoachRepository;
+import org.example.sport_section.Repositories.CoachRepository.CoachRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
