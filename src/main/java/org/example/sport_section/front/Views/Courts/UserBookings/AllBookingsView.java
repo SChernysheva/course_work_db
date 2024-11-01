@@ -18,6 +18,7 @@ import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
+import org.example.sport_section.front.Views.Courts.ScheduleCourtsAdmin;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +64,6 @@ public class AllBookingsView extends HorizontalLayout {
             add(loadContent(bookings));
             remove(loadingSpinner);
         });
-
     }
 
     private VerticalLayout loadContent(List<Booking_court> bookings) {
@@ -142,70 +142,6 @@ public class AllBookingsView extends HorizontalLayout {
         return card;
     }
 
-    private VerticalLayout createSidebarViewUser(String userEmail) {
-        VerticalLayout sidebar = new VerticalLayout();
-        // Создание контейнера с информацией о пользователе
-        Div userContainer = new Div();
-        userContainer.getStyle().set("background-color", "lightgray");
-        userContainer.getStyle().set("padding", "5px");
-
-        // Добавление текста с информацией о пользователе
-        Span userText = new Span("Пользователь: " + userEmail);
-        userContainer.add(userText);
-
-        // Добавление контейнера с информацией о пользователе на боковую панель
-        sidebar.add(userContainer);
-        sidebar.setAlignItems(Alignment.CENTER); // Центрирование по вертикали
-        sidebar.setWidth("200px"); // Задание ширины боковой панели
-
-        return sidebar;
-    }
-
-    private Button getExitButton() {
-        Button exitButton = new Button("Выйти");
-
-        exitButton.getStyle().set("background-color", "orange");
-        exitButton.getStyle().set("color", "white");
-        exitButton.getStyle().set("font-size", "12px");
-        exitButton.getStyle().set("border", "none");
-        exitButton.getStyle().set("padding", "5px 10px");
-
-        exitButton.addClickListener(event -> {
-            exit();
-        });
-        return exitButton;
-    }
-    private void exit() {
-        // Создаём диалоговое окно
-        Dialog dialog = new Dialog();
-
-        Text text = new Text("Вы точно хотите выйти?");
-        Button proveButton = new Button("Выйти");
-        proveButton.getStyle().set("background-color", "lightgray");
-        proveButton.getStyle().set("color", "white");
-        proveButton.addClickListener(event -> {
-            SecurityUtils.deleteAuth();
-            VaadinSession.getCurrent().close(); // Закройте текущую сессию
-            // UI.getCurrent().navigate(StartPage.class);
-        });
-
-        Button cancelButton = new Button("Отмена");
-        cancelButton.addClickListener(event -> {
-            dialog.close(); // Закрываем диалоговое окно
-            // Можем (необязательно) добавить логику возврата на домашнюю страницу
-            UI.getCurrent().navigate(HomePage.class);
-        });
-
-        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
-        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
-        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
-        layout.setSizeFull(); // Занять всю доступную область
-
-        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
-        dialog.setWidth("400px"); // Настройка ширины диалогового окна
-        dialog.setHeight("200px"); // Настройка высоты диалогового окна
-        dialog.open(); // Открываем диалоговое окно
-    }
     private void cancelBooking(Booking_court booking) {
         // Создаём диалоговое окно
         Dialog dialog = new Dialog();
@@ -249,6 +185,9 @@ public class AllBookingsView extends HorizontalLayout {
         dialog.setWidth("400px"); // Настройка ширины диалогового окна
         dialog.setHeight("200px"); // Настройка высоты диалогового окна
         dialog.open(); // Открываем диалоговое окно
+    }
+    private static boolean isUserAdmin() {
+        return SecurityUtils.isAdmin();
     }
 
 }

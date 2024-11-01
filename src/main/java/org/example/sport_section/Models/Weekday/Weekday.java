@@ -1,8 +1,11 @@
 package org.example.sport_section.Models.Weekday;
 
 import jakarta.persistence.*;
+import org.example.sport_section.DTO.CourtBookingDTO;
 import org.example.sport_section.Models.Groups.Schedule;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Entity
@@ -24,6 +27,7 @@ public class Weekday {
     @Column(name = "num_of_day")
     private int numOfDay;
 
+
     public int getNumOfDay() {
         return numOfDay;
     }
@@ -33,6 +37,13 @@ public class Weekday {
     }
 
     public List<Schedule> getSchedules() {
+        Comparator<Schedule> comparator =  new Comparator<Schedule>() {
+            @Override
+            public int compare(Schedule o1, Schedule o2) {
+                return o1.getTime().compareTo(o2.getTime());
+            }
+        };
+        Collections.sort(schedules, comparator);
         return schedules;
     }
 

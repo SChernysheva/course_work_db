@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.sql.Time;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -40,6 +40,50 @@ public class ScheduleService {
 
     @Async
     public CompletableFuture<List<Weekday>> getAllWeekdaysWithSchedules() {
+        return CompletableFuture.supplyAsync(() -> {
+            Comparator<Weekday> comparator =  new Comparator<Weekday>() {
+                @Override
+                public int compare(Weekday o1, Weekday o2) {
+                    return o1.getNumOfDay() - o2.getNumOfDay();
+                }
+            };
+            List<Weekday> res = weekdayRepository.findAll();
+            Collections.sort(res, comparator);
+            return res;
+        });
+    }
+
+    @Async
+    public CompletableFuture<List<Weekday>> getAllWeekdays() {
         return CompletableFuture.supplyAsync(weekdayRepository::findAll);
+    }
+
+    @Async
+    public CompletableFuture<List<Time>> getAvailableTimeForNewSchedule(int dayWeekId, int courtId) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Time> booking =  scheduleRepository.getBookingTimeForDayWeek(courtId, dayWeekId);
+            List<Time> res = new ArrayList<>();
+            for (int i = 7; i <= 20; i++) {
+                Time currentTime = Time.valueOf(String.format("%02d:00:00", i));
+                if (!booking.contains(currentTime)) {
+                    res.add(currentTime);
+                }
+            }
+            return res;
+        });
+    }
+
+    @Async //here
+    public CompletableFuture<Void> addSchedule(Schedule schedule) {
+        return CompletableFuture.runAsync(() -> {
+            scheduleRepository.save(schedule);
+        });
+    }
+
+    @Async //here
+    public CompletableFuture<Void> deleteSchedule(int id) {
+        return CompletableFuture.runAsync(() -> {
+            scheduleRepository.deleteById(id);
+        });
     }
 }

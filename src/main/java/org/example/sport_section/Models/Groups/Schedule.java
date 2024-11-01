@@ -55,6 +55,13 @@ public class Schedule {
 
     }
 
+    public Schedule(Time time, Group group, Court court, Weekday weekday) {
+        this.time = time;
+        this.group = group;
+        this.court = court;
+        this.weekday = weekday;
+    }
+
     public int getId() {
         return id;
     }

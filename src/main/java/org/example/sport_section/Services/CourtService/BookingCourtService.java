@@ -1,6 +1,7 @@
 package org.example.sport_section.Services.CourtService;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.example.sport_section.DTO.CourtBookingDTO;
 import org.example.sport_section.Exceptions.NotFoundException;
 import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.Courts.Booking_court;
@@ -109,6 +110,26 @@ public class BookingCourtService {
                 throw new CompletionException(new NotFoundException(ex.getMessage()));
             }
             return result;
+        });
+    }
+
+    @Async
+    public CompletableFuture<List<CourtBookingDTO>> getScheduleCourtOnDate(int courtId, LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            String dayweek = date.getDayOfWeek().toString().toLowerCase();
+            List<CourtBookingDTO> resBook = bookingCourtsRepository.findCourtBookingsByCourtIdAndDate(courtId,
+                    Date.valueOf(date));
+            List<CourtBookingDTO> resSchedule = bookingCourtsRepository.findCourtSchedulesByCourtIdAndDate(courtId, dayweek);
+            Comparator<CourtBookingDTO> comparator =  new Comparator<CourtBookingDTO>() {
+                @Override
+                public int compare(CourtBookingDTO o1, CourtBookingDTO o2) {
+                    return o1.getTime().compareTo(o2.getTime());
+                }
+            };
+            List<CourtBookingDTO> res = new ArrayList<>(resBook);
+            res.addAll(resSchedule);
+            Collections.sort(res, comparator);
+            return res;
         });
     }
 

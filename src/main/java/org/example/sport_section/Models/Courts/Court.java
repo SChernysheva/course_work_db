@@ -14,7 +14,7 @@ public class Court {
     private int id;
     private String courtName;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "court")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "court")
     private List<Schedule> schedules;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "court")

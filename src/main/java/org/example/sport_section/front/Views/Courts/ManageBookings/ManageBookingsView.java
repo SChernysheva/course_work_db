@@ -12,14 +12,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Services.CourtService.BookingCourtService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
-import org.example.sport_section.front.Views.Home.HomePage;
-import org.example.sport_section.front.Views.Courts.UserBookings.AddBookingView;
 import org.example.sport_section.front.Views.Courts.UserBookings.AllBookingsView;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Courts.Booking_court;
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Models.Users.User;
@@ -20,6 +22,8 @@ import org.example.sport_section.Models.Weekday.Weekday;
 import org.example.sport_section.Services.ScheduleService.ScheduleService;
 import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
+import org.example.sport_section.front.Views.Courts.ScheduleCourtsAdmin;
+import org.example.sport_section.front.Views.Home.HomePage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
@@ -59,8 +63,6 @@ public class ScheduleView extends HorizontalLayout {
         User user = userOpt.get();
         List<Weekday> weekdays = scheduleService.getAllWeekdaysWithSchedules().join();
 
-        weekdays.sort(Comparator.comparingInt(Weekday::getNumOfDay));
-
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setSizeFull();
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
@@ -95,9 +97,13 @@ public class ScheduleView extends HorizontalLayout {
 
         mainLayout.add(weekLayout);
         add(mainLayout);
+        if (SecurityUtils.isAdmin()) {
+            VerticalLayout vl = new VerticalLayout();
+            vl.add(addScheduleButton());
+            vl.add(addScheduleAddingButton());
+            add(vl);
+        }
     }
-
-
 
     private VerticalLayout addWeekdayEntry(Weekday entry) {
         VerticalLayout entryLayout = new VerticalLayout();
@@ -120,16 +126,16 @@ public class ScheduleView extends HorizontalLayout {
 
         return entryLayout;
     }
-    private HorizontalLayout createScheduleCard(Schedule schedule) {
-        HorizontalLayout card = new HorizontalLayout();
+    private VerticalLayout createScheduleCard(Schedule schedule) {
+        VerticalLayout card = new VerticalLayout();
         card.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "15px")
                 .set("border-radius", "10px")
                 .set("box-shadow", "0px 4px 8px rgba(0, 0, 0, 0.1)") // Увеличиваем тень для более выраженного эффекта
                 .set("margin", "10px 0") // Добавляем отступы между карточками
                 .set("color", "#333"); // Возможно, лучше выбрать немного более светлый цвет текста для контраста с фоном
-        card.setWidth("90%");
-        card.setHeight("150px"); // Делаем высоту автоматической, чтобы текст не обрезался
+        card.setWidth("auto");
+        card.setHeight("auto"); // Делаем высоту автоматической, чтобы текст не обрезался
         card.setPadding(true); // Устанавливаем отступы внутри карточки
         card.setAlignItems(FlexComponent.Alignment.CENTER); // Центрируем элементы по вертикали
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -138,8 +144,102 @@ public class ScheduleView extends HorizontalLayout {
         Text hour = new Text(sdf.format(schedule.getTime()) + "  ");
         Text court = new Text(schedule.getCourt().getCourtName());
         card.add(group, hour, court);
+        if (SecurityUtils.isAdmin()) {
+            Button delete = getDeleteButton(schedule.getId());
+            card.add(delete);
+        }
 
         return card;
+    }
+
+    private Button addScheduleButton() {
+        Button schedule = new Button("Расписание кортов сегодня");
+        schedule.addClickListener(e -> {
+            UI.getCurrent().navigate(ScheduleCourtsAdmin.class);
+        });
+        // Установка стилей для кнопки
+        schedule.getStyle().set("background-color", "#d3d3d3"); // Светло-серый цвет фона
+        schedule.getStyle().set("color", "#333333"); // Темно-серый цвет текста
+        schedule.getStyle().set("border", "none"); // Убирает стандартную обводку
+        schedule.getStyle().set("border-radius", "5px"); // Закругленные углы
+        schedule.getStyle().set("padding", "10px 20px"); // Внутренние отступы для увеличенного размера
+        schedule.getStyle().set("font-size", "16px"); // Размер текста
+        schedule.getStyle().set("cursor", "pointer"); // Изменение курсора на указатель при наведении
+
+// Установка эффекта при наведении
+        schedule.getElement().getThemeList().add("primary");
+        schedule.getStyle().set("transition", "background-color 0.3s"); // Плавный переход
+        schedule.addFocusListener(e -> schedule.getStyle().set("background-color", "#c0c0c0"));
+        schedule.addBlurListener(e -> schedule.getStyle().set("background-color", "#d3d3d3"));
+        return schedule;
+    }
+
+    private Button addScheduleAddingButton() {
+        Button schedule = new Button("Добавить новый слот");
+        schedule.addClickListener(e -> {
+            UI.getCurrent().navigate(AddScheduleGroupAdmin.class);
+        });
+        // Установка стилей для кнопки
+        schedule.getStyle().set("background-color", "#d3d3d3"); // Светло-серый цвет фона
+        schedule.getStyle().set("color", "#333333"); // Темно-серый цвет текста
+        schedule.getStyle().set("border", "none"); // Убирает стандартную обводку
+        schedule.getStyle().set("border-radius", "5px"); // Закругленные углы
+        schedule.getStyle().set("padding", "10px 20px"); // Внутренние отступы для увеличенного размера
+        schedule.getStyle().set("font-size", "16px"); // Размер текста
+        schedule.getStyle().set("cursor", "pointer"); // Изменение курсора на указатель при наведении
+
+// Установка эффекта при наведении
+        schedule.getElement().getThemeList().add("primary");
+        schedule.getStyle().set("transition", "background-color 0.3s"); // Плавный переход
+        schedule.addFocusListener(e -> schedule.getStyle().set("background-color", "#c0c0c0"));
+        schedule.addBlurListener(e -> schedule.getStyle().set("background-color", "#d3d3d3"));
+        return schedule;
+    }
+
+    private void confirm(int id) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Удалить слот?");
+        Button proveButton = new Button("Удалить слот?");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access(() -> {
+                Notification.show("Выполняется..");
+            });
+            scheduleService.deleteSchedule(id).join();
+            UI.getCurrent().getPage().reload();
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
+    }
+    private Button getDeleteButton(int id) {
+        Button delete = new Button("Del");
+        delete.getStyle().set("background-color", "#f08080"); // Нежно-красный цвет
+        delete.getStyle().set("color", "#ffffff"); // Белый цвет текста
+        delete.getStyle().set("border", "none");
+        delete.getStyle().set("border-radius", "3px"); // Слегка скругленные углы
+        delete.getStyle().set("padding", "5px 10px"); // Меньше отступы, чтобы кнопка была маленькой
+        delete.getStyle().set("font-size", "12px"); // Меньший размер шрифта
+        delete.getStyle().set("cursor", "pointer");
+        delete.addClickListener( e -> {
+            confirm(id);
+        });
+        return delete;
     }
 
 
