@@ -5,12 +5,14 @@ import jakarta.persistence.EntityNotFoundException;
 import org.example.sport_section.Exceptions.NotFoundException;
 import org.example.sport_section.Exceptions.ValueAlreadyExistsException;
 import org.example.sport_section.Models.Users.User;
+import org.example.sport_section.Repositories.CoachRepository.CoachRepository;
 import org.example.sport_section.Repositories.GroupRepository.GroupRepository;
 import org.example.sport_section.Repositories.User.IAdminRepository;
 import org.example.sport_section.Repositories.User.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +24,15 @@ public class UserService {
     private IUserRepository userRepository;
     private IAdminRepository adminRepository;
     private GroupRepository groupRepository;
+    private CoachRepository coachRepository;
 
     @Autowired
-    public UserService(IUserRepository userRepository, IAdminRepository adminRepository, GroupRepository groupRepository) {
+    public UserService(IUserRepository userRepository, IAdminRepository adminRepository, GroupRepository groupRepository,
+                       CoachRepository coachRepository) {
         this.userRepository = userRepository;
         this.adminRepository = adminRepository;
         this.groupRepository = groupRepository;
+        this.coachRepository = coachRepository;
     }
 
     @Async
@@ -47,6 +52,7 @@ public class UserService {
         });
     }
 
+
     @Async
     public CompletableFuture<Void> deleteUserAsync(int id) throws CompletionException {
         return CompletableFuture.runAsync(() -> {
@@ -61,6 +67,19 @@ public class UserService {
             return result;
         });
     }
+
+    @Async
+    public CompletableFuture<Void> deleteAdminAsync(int id) {
+        return CompletableFuture.runAsync(() -> {
+            if (!adminRepository.existsById(id)) {
+                throw new RuntimeException("User with id " + id + " not found.");
+            }
+            adminRepository.deleteById(id);
+        }).exceptionally(ex -> {
+            throw new CompletionException(new NotFoundException(ex.getMessage()));
+        });
+    }
+
 
 
     @Async
@@ -82,6 +101,28 @@ public class UserService {
                     }
                     return result;
                 });
+    }
+
+    @Async
+    public CompletableFuture<Integer> addCoachAsync(int userId) throws CompletionException {
+        return CompletableFuture.supplyAsync(() -> coachRepository.save(userId))
+                .handle((result, ex) -> {
+                    if (ex != null) {
+                        throw new CompletionException(ex);
+                    }
+                    return result;
+                });
+    }
+    @Async
+    public CompletableFuture<Void> deleteCoachAsync(int id) {
+        return CompletableFuture.runAsync(() -> {
+            if (!coachRepository.existsById(id)) {
+                throw new RuntimeException("User with id " + id + " not found.");
+            }
+            coachRepository.deleteById(id);
+        }).exceptionally(ex -> {
+            throw new CompletionException(new NotFoundException(ex.getMessage()));
+        });
     }
 
     @Async

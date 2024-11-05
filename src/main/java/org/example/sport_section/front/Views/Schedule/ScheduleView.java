@@ -85,7 +85,7 @@ public class ScheduleView extends HorizontalLayout {
 
         mainLayout.add(weekLayout);
         add(mainLayout);
-        if (SecurityUtils.isAdmin()) {
+        if (SecurityUtils.isAdminOrHigher()) {
             VerticalLayout vl = new VerticalLayout();
             vl.add(addScheduleButton());
             vl.add(addScheduleAddingButton());
@@ -132,7 +132,7 @@ public class ScheduleView extends HorizontalLayout {
         Text hour = new Text(sdf.format(schedule.getTime()) + "  ");
         Text court = new Text(schedule.getCourt().getCourtName());
         card.add(group, hour, court);
-        if (SecurityUtils.isAdmin()) {
+        if (SecurityUtils.isAdminOrHigher()) {
             Button delete = getDeleteButton(schedule.getId());
             card.add(delete);
         }

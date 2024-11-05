@@ -161,7 +161,7 @@ public class AllBookingsView extends HorizontalLayout {
                 });
             } catch (CompletionException ex) {
                 UI.getCurrent().access(() -> {
-                    Notification.show("Ошибка: такого бронирования нет");
+                    Notification.show("Ошибка: такого бронирования нет", 2000, Notification.Position.MIDDLE);
                 });
                 dialog.close();
             }
@@ -184,7 +184,7 @@ public class AllBookingsView extends HorizontalLayout {
         dialog.open(); // Открываем диалоговое окно
     }
     private static boolean isUserAdmin() {
-        return SecurityUtils.isAdmin();
+        return SecurityUtils.isAdminOrHigher();
     }
 
 }

@@ -36,6 +36,7 @@ public class ScheduleCourtsAdmin extends VerticalLayout {
         mainLayout.getStyle().set("border-radius", "10px"); // Закругленные края
         mainLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         List<Court> courts = courtService.getCourtsAsync().join();
+        setHeightFull();
         for (Court court : courts) {
             VerticalLayout courtColumn = new VerticalLayout();
             courtColumn.addClassName("weekday-column");

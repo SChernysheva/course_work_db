@@ -11,12 +11,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Utils.Security.SecurityUtils;
+import org.example.sport_section.front.Views.Coaches.CoachesView;
 import org.example.sport_section.front.Views.Schedule.ScheduleView;
 import org.example.sport_section.front.Views.UsersViews.AllUsersView;
 import org.example.sport_section.front.Views.Home.HomePage;
 import org.example.sport_section.front.Views.Courts.ManageBookings.ManageBookingsView;
 import org.example.sport_section.front.Views.Courts.UserBookings.AllBookingsView;
-import org.example.sport_section.front.Views.UsersViews.CoachesView;
 
 public class Sidebar {
 
@@ -42,14 +42,7 @@ public class Sidebar {
             ui.navigate(AllBookingsView.class);
         });
         coachesButton.addClickListener(event ->
-                ui.navigate(HomePage.class));
-        coachesButton.getStyle().set("background-color", "#FFFFFF")
-                .set("padding", "10px")
-                .set("border-radius", "8px")
-                .set("box-shadow", "0px 2px 4px rgba(0, 0, 0, 0.1)")
-                .set("color", "black");
-        coachesButton.addClickListener(event ->
-                ui.navigate(AllBookingsView.class));
+                ui.navigate(CoachesView.class));
         coachesButton.getStyle().set("background-color", "#FFFFFF")
                 .set("padding", "10px")
                 .set("border-radius", "8px")
@@ -121,6 +114,9 @@ public class Sidebar {
         }
         if (page.equals(ScheduleView.class)) {
             scheduleButton.getStyle().set("background-color", "#E8E8E8");
+        }
+        if (page.equals((CoachesView.class))) {
+            coachesButton.getStyle().set("background-color", "#E8E8E8");
         }
 
         Button update = new Button("Изменить мои контакты");
@@ -207,6 +203,6 @@ public class Sidebar {
     }
 
     private static boolean isUserAdmin() {
-        return SecurityUtils.isAdmin();
+        return SecurityUtils.isAdminOrHigher();
     }
 }

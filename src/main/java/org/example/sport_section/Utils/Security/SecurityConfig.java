@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyAuthority("ADMIN", "OWNER")
                         // .requestMatchers("/home").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -92,6 +92,9 @@ public class SecurityConfig {
             authorities.add(new SimpleGrantedAuthority("USER"));
             if (user.getAdmin() != null) {
                 authorities.add(new SimpleGrantedAuthority("ADMIN"));
+            }
+            if (user.getOwner() != null) {
+                authorities.add(new SimpleGrantedAuthority("OWNER"));
             }
             if (user.getCoach() != null) {
                 authorities.add(new SimpleGrantedAuthority("COACH"));

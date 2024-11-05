@@ -25,6 +25,17 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Admin admin;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Owner owner;
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
+
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;

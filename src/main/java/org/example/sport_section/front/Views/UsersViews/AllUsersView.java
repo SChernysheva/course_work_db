@@ -122,16 +122,41 @@ public class AllUsersView extends HorizontalLayout {
             goToUserInfo(user);
         });
         card.add(lastName, firstName, email, phone, infoButton);
-        if (user.getAdmin() == null) {
+        if (user.getAdmin() == null && SecurityUtils.isOwner()) {
             Button adminButton = new Button("Сделать администратором");
             adminButton.addClickListener(e -> {
                 addAdmin(user);
             });
             card.add(adminButton);
-        } else {
-            Text text = new Text("Администратор");
-            //text.getStyle().set("color", "red");
+        } else if (user.getAdmin() != null) {
+            Text text = new Text("Администратор ");
             card.add(text);
+            if (SecurityUtils.isOwner()) {
+                Button adminButton = new Button("Удалить из администраторов");
+                adminButton.addClickListener(e -> {
+                    deleteAdmin(user);
+                });
+                card.add(adminButton);
+            }
+        }
+
+        if (user.getCoach() == null && SecurityUtils.isOwner()) {
+            Button coachButton = new Button("Назначить тренером");
+            coachButton.addClickListener(e -> {
+                addCoach(user);
+            });
+            card.add(coachButton);
+        } else if (user.getCoach() != null) {
+            Text text = new Text("Тренер");
+            card.add(text);
+            if (SecurityUtils.isOwner()) {
+                Button coachButton = new Button("Удалить из тренеров");
+                coachButton.addClickListener(e -> {
+                    deleteCoach(user);
+                    UI.getCurrent().getPage().reload();
+                });
+                card.add(coachButton);
+            }
         }
 
 
@@ -153,6 +178,7 @@ public class AllUsersView extends HorizontalLayout {
     public void goToUserInfo(User user) {
         UI.getCurrent().navigate("admin/users/info/" + user.getId());
     }
+
     private void addAdmin(User user) {
         // Создаём диалоговое окно
         Dialog dialog = new Dialog();
@@ -174,6 +200,139 @@ public class AllUsersView extends HorizontalLayout {
             } catch (CompletionException ex) {
                 UI.getCurrent().access( () -> {
                     Notification.show("Ошибка: пользователь уже администратор", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            }
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            // Можем (необязательно) добавить логику возврата на домашнюю страницу
+            UI.getCurrent().navigate(AllUsersView.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
+    }
+
+    private void deleteAdmin(User user) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Удалить пользователя " + user.getFirst_name() + " из администраторов?");
+        Button proveButton = new Button("Да");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access( () -> {
+                Notification.show("Выполняется...", 1000, Notification.Position.MIDDLE);
+            });
+            System.out.println(user.getAdmin().getId());
+            try {
+                userService.deleteAdminAsync(user.getAdmin().getId()).join();
+                UI.getCurrent().access( () -> {
+                    Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                    UI.getCurrent().getPage().reload();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access( () -> {
+                    Notification.show("Ошибка: пользователь уже не администратор", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            }
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            // Можем (необязательно) добавить логику возврата на домашнюю страницу
+            UI.getCurrent().navigate(AllUsersView.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
+    }
+    private void addCoach(User user) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Сделать пользователя " + user.getFirst_name() + " тренером?");
+        Button proveButton = new Button("Да");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access( () -> {
+                Notification.show("Выполняется...", 1000, Notification.Position.MIDDLE);
+            });
+            try {
+                userService.addCoachAsync(user.getId()).join();
+                UI.getCurrent().access( () -> {
+                    Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access( () -> {
+                    Notification.show("Ошибка: пользователь уже тренер", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            }
+        });
+
+        Button cancelButton = new Button("Отмена");
+        cancelButton.addClickListener(event -> {
+            dialog.close(); // Закрываем диалоговое окно
+            // Можем (необязательно) добавить логику возврата на домашнюю страницу
+            UI.getCurrent().navigate(AllUsersView.class);
+        });
+
+        VerticalLayout layout = new VerticalLayout(text, proveButton, cancelButton);
+        layout.setAlignItems(Alignment.CENTER); // Выравнивание по центру
+        layout.setJustifyContentMode(JustifyContentMode.CENTER); // Вертикальное выравнивание по центру
+        layout.setSizeFull(); // Занять всю доступную область
+
+        dialog.add(layout); // Добавляем вёрстку в диалоговое окно
+        dialog.setWidth("400px"); // Настройка ширины диалогового окна
+        dialog.setHeight("200px"); // Настройка высоты диалогового окна
+        dialog.open(); // Открываем диалоговое окно
+    }
+
+    private void deleteCoach(User user) {
+        // Создаём диалоговое окно
+        Dialog dialog = new Dialog();
+
+        Text text = new Text("Удалить пользователя " + user.getFirst_name() + " из тренеров?");
+        Button proveButton = new Button("Да");
+        proveButton.getStyle().set("background-color", "lightgray");
+        proveButton.getStyle().set("color", "white");
+        proveButton.addClickListener(event -> {
+            UI.getCurrent().access( () -> {
+                Notification.show("Выполняется...", 1000, Notification.Position.MIDDLE);
+            });
+            try {
+                userService.deleteCoachAsync(user.getCoach().getId()).join();
+                UI.getCurrent().access( () -> {
+                    Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
+                    dialog.close();
+                });
+            } catch (CompletionException ex) {
+                UI.getCurrent().access( () -> {
+                    Notification.show("Ошибка: пользователь уже не тренер", 1000, Notification.Position.MIDDLE);
                     dialog.close();
                 });
             }

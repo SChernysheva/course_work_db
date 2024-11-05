@@ -18,4 +18,9 @@ public interface IAdminRepository extends JpaRepository<Admin, Integer> {
     @Query(value = "INSERT INTO admins (user_id) VALUES (:userId)", nativeQuery = true)
     public Integer save(@Param("userId") int userId);
 
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Admin a WHERE a.id = :id")
+    void deleteById(@Param("id") int id);
+
 }

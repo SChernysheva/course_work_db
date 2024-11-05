@@ -43,14 +43,21 @@ public class SecurityUtils {
         return Optional.empty();
     }
 
-    public static boolean isAdmin() {
+    public static boolean isAdminOrHigher() {
         return getUserRoles().map(roles -> roles.stream()
-                        .anyMatch(role -> role.getAuthority().equals("ADMIN")))
+                        .anyMatch(role -> role.getAuthority().equals("ADMIN") || role.getAuthority().equals("OWNER")))
                 .orElse(false);
     }
+
     public static boolean isCoach() {
         return getUserRoles().map(roles -> roles.stream()
                         .anyMatch(role -> role.getAuthority().equals("COACH")))
+                .orElse(false);
+    }
+
+    public static boolean isOwner() {
+        return getUserRoles().map(roles -> roles.stream()
+                        .anyMatch(role -> role.getAuthority().equals("OWNER")))
                 .orElse(false);
     }
 
