@@ -1,6 +1,8 @@
 package org.example.sport_section.Models.Images;
 
 import jakarta.persistence.*;
+import org.example.sport_section.Models.Courts.Court;
+import org.example.sport_section.Models.Users.User;
 
 @Entity
 @Table(name = "court_images")
@@ -10,22 +12,22 @@ public class CourtImage {
     private int id;
 
     private String image_type;
-    private int court_id;
+
+    @OneToOne
+    @JoinColumn(name = "court_id", nullable = false)
+    private Court court;
+
     private byte[] image_data;
 
-    public CourtImage(byte[] image_data, int court_id, String image_type) {
-        this.image_data = image_data;
-        this.court_id = court_id;
-        this.image_type = image_type;
-    }
 
     public CourtImage() {}
 
-    public CourtImage(int id, String image_type, int court_id, byte[] image_data) {
-        this.id = id;
-        this.image_type = image_type;
-        this.court_id = court_id;
-        this.image_data = image_data;
+    public Court getCourt() {
+        return court;
+    }
+
+    public void setCourt(Court court) {
+        this.court = court;
     }
 
     public int getId() {
@@ -42,14 +44,6 @@ public class CourtImage {
 
     public void setImage_type(String image_type) {
         this.image_type = image_type;
-    }
-
-    public int getCourt_id() {
-        return court_id;
-    }
-
-    public void setCourt_id(int court_id) {
-        this.court_id = court_id;
     }
 
     public byte[] getImage_data() {

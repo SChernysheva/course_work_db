@@ -3,6 +3,8 @@ package org.example.sport_section.Models.Courts;
 
 import jakarta.persistence.*;
 import org.example.sport_section.Models.Groups.Schedule;
+import org.example.sport_section.Models.Images.CourtImage;
+import org.example.sport_section.Models.Users.Admin;
 
 import java.util.List;
 
@@ -19,6 +21,17 @@ public class Court {
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "court")
     private List<Booking_court> bookings;
+
+    @OneToOne(mappedBy = "court", cascade = CascadeType.ALL)
+    private CourtImage courtImage;
+
+    public CourtImage getCourtImage() {
+        return courtImage;
+    }
+
+    public void setCourtImage(CourtImage courtImage) {
+        this.courtImage = courtImage;
+    }
 
     public List<Schedule> getSchedules() {
         return schedules;

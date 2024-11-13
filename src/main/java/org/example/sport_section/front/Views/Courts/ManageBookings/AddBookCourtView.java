@@ -41,7 +41,7 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
     private final UserService userService;
     private final BookingCourtService bookingCourtService;
     private final ImageService imageService;
-    private int courtId;
+    private Court court;
 
     @Autowired
     public AddBookCourtView(CourtService courtService, UserService userService,
@@ -55,7 +55,9 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
     @Override
     public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         if (parameter != null) {
-            this.courtId = Integer.parseInt(parameter);
+            int courtId = Integer.parseInt(parameter);
+            this.court = courtService.getCourtByIdAsync(courtId).join().get();
+            //here
         }
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -68,7 +70,7 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
         add(loadingSpinner);
         //Court currentCourt = (Court) VaadinSession.getCurrent().getAttribute("court");
         String email = SecurityUtils.getCurrentUserEmail();
-        Div div = getDiv(courtId, email);
+        Div div = getDiv(court.getId(), email);
         Div mainContent = getVerticalMainContent();
         mainDiv.add(div, mainContent);
         mainDiv.setHeight("850px");
@@ -94,7 +96,7 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
         homeButton.addClickListener(event -> {
             UI.getCurrent().navigate(HomePage.class);
         });
-        Image courtImage = getImageForCourt(courtId);
+        Image courtImage = getImageForCourt(court);
         courtImage.getElement().getStyle().set("border-radius", "15px");
         courtImage.getElement().getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)");
         courtImage.setWidth("700px");
@@ -239,10 +241,10 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
         spinner.getStyle().set("font-weight", "bold");
         return spinner;
     }
-    private Image getImageForCourt(int courtId) {
-        Optional<CourtImage> imageData = imageService.getImageByCourtId(courtId).join();
-        if (imageData.isPresent()) {
-            Image image = ImageHelper.createImageFromByteArray(imageData.get().getImage_data(), "описание");
+    private Image getImageForCourt(Court court) {
+        CourtImage imageData = court.getCourtImage();
+        if (imageData != null) {
+            Image image = ImageHelper.createImageFromByteArray(imageData.getImage_data(), "описание");
             return image;
         }
         Image image = new Image();
