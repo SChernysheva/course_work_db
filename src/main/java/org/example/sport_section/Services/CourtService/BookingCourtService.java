@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -33,18 +34,18 @@ public class BookingCourtService {
         this.scheduleRepository = scheduleRepository;
     }
 
-    @Async
-    public CompletableFuture<List<Time>> getBookingTimeForCourtAsync(int id, LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
-            String dayweek = date.getDayOfWeek().toString().toLowerCase();
-            List<Time> bookBySchedule = scheduleRepository.getScheduleOnWeekDayName(dayweek, id).stream().
-                    map(Schedule::getTime).toList();
-            List<Time> booksByUsers = bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date));
-            Set<Time> res = new HashSet<>(booksByUsers);
-            res.addAll(bookBySchedule);
-            return new ArrayList<>(res);
-        });
-    }
+//    @Async
+//    public CompletableFuture<List<Time>> getBookingTimeForCourtAsync(int id, LocalDate date) {
+//        return CompletableFuture.supplyAsync(() -> {
+//            String dayweek = date.getDayOfWeek().toString().toLowerCase();
+//            List<Time> bookBySchedule = scheduleRepository.getScheduleOnWeekDayName(dayweek, id).stream().
+//                    map(Schedule::getTime).toList();
+//            List<Time> booksByUsers = bookingCourtsRepository.get_Booking_Hours_By_Court_id_And_Date(id, Date.valueOf(date));
+//            Set<Time> res = new HashSet<>(booksByUsers);
+//            res.addAll(bookBySchedule);
+//            return new ArrayList<>(res);
+//        });
+//    }
 
     @Async
     public CompletableFuture<List<Time>> getAviavleTimeForCourtAsync(int id, LocalDate date) {
@@ -52,7 +53,8 @@ public class BookingCourtService {
             String dayweek = date.getDayOfWeek().toString().toLowerCase();
             List<Time> bookBySchedule = scheduleRepository.getScheduleOnWeekDayName(dayweek, id).stream().
                     map(Schedule::getTime).toList();
-            List<Time> booksByUsers = bookingCourtsRepository.getBookingHoursByCourt_idAndDate(id, Date.valueOf(date));
+            List<Time> booksByUsers = bookingCourtsRepository.get_Booking_Hours_By_Court_id_And_Date(id, Date.valueOf(date));
+            System.out.println("b" + booksByUsers);
             Set<Time> resBook = new HashSet<>(booksByUsers);
             resBook.addAll(bookBySchedule);
             System.out.println(booksByUsers);
@@ -79,7 +81,7 @@ public class BookingCourtService {
     }
 
     @Async
-    public CompletableFuture<List<Booking_court>> getBookingsForUserAsync(long userId) {
+    public CompletableFuture<List<Booking_court>> getBookingsForUserAsync(int userId) {
         return CompletableFuture.supplyAsync(() -> bookingCourtsRepository.findByUserId(userId));
     }
 

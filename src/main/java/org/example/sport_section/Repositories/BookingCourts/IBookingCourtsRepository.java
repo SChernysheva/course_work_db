@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,17 +15,14 @@ import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
 
-public interface IBookingCourtsRepository extends JpaRepository <Booking_court, Integer> {
+public interface IBookingCourtsRepository extends JpaRepository <Booking_court, Integer>, CustomBookingCourtRepository{
 
-    @Query(value = "SELECT time FROM booking_courts WHERE court_id = :id AND date = :date", nativeQuery = true)
-    public List<Time> getBookingHoursByCourt_idAndDate(@Param("id") long id, @Param("date") Date date);
+    @Query(value = "select * from GET_BOOKING_HOURS_BY_COURT_ID_AND_DATE(:id, :date_)", nativeQuery = true)
+    public List<Time> get_Booking_Hours_By_Court_id_And_Date(@Param("id") int court_id, @Param("date_") Date date_);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT b FROM Booking_court b WHERE b.court.id = :courtId AND b.time = :time AND b.date = :date")
-    Booking_court findByCourtIdAndBookingTime(@Param("courtId") long courtId, @Param("date") Date date, @Param("time") Time time);
 
-    @Query(value = "select * from booking_courts where user_id = :id", nativeQuery = true)
-    List<Booking_court> findByUserId(@Param("id") long userId);
+    @Query(value = "select * from GET_BOOKING_COURTS_BY_USER_ID(:user_id)", nativeQuery = true)
+    List<Booking_court> findByUserId(@Param("user_id") int userId);
 
     @Modifying
     @Transactional

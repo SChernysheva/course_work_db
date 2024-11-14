@@ -5,8 +5,6 @@ import org.example.sport_section.Models.Users.User;
 
 import java.sql.Date;
 import java.sql.Time;
-
-
 @Entity
 @Table(name = "booking_courts")
 public class Booking_court {
@@ -24,6 +22,8 @@ public class Booking_court {
     private User user;
 
     private Date date;
+
+    @Column(name = "booking_time")
     private Time time;
 
     public Booking_court(Court court, User user, Date date, Time time) {

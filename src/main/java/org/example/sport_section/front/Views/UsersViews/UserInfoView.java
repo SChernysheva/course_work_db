@@ -23,6 +23,7 @@ import org.example.sport_section.Services.UserService.UserService;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 @PageTitle("Информация о пользователе")
@@ -157,9 +158,9 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
         card.setHeight("95px"); // Делаем высоту автоматической, чтобы текст не обрезался
         card.setPadding(true); // Устанавливаем отступы внутри карточки
         card.setAlignItems(FlexComponent.Alignment.CENTER); // Центрируем элементы по вертикали
-
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         Text date = new Text(booking.getDate().toString() + "  ");
-        Text hour = new Text(booking.getTime() + ":00  ");
+        Text hour = new Text(sdf.format(booking.getTime()) + "  ");
         Text name = new Text(booking.getCourt().getCourtName());
         card.add(date, hour, name);
         return card;

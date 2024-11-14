@@ -205,6 +205,7 @@ public class AddBookCourtView extends HorizontalLayout implements HasUrlParamete
     }
 
     private List<Time> getAviableHours(int courtId, LocalDate date) {
+        //LocalDate localDate = LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth());
         return bookingCourtService.getAviavleTimeForCourtAsync(courtId, date).join();
     }
 
