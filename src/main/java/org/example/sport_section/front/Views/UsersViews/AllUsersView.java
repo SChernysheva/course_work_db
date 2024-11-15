@@ -153,7 +153,6 @@ public class AllUsersView extends HorizontalLayout {
                 Button coachButton = new Button("Удалить из тренеров");
                 coachButton.addClickListener(e -> {
                     deleteCoach(user);
-                    UI.getCurrent().getPage().reload();
                 });
                 card.add(coachButton);
             }
@@ -196,6 +195,7 @@ public class AllUsersView extends HorizontalLayout {
                 UI.getCurrent().access( () -> {
                     Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
                     dialog.close();
+                    UI.getCurrent().getPage().reload();
                 });
             } catch (CompletionException ex) {
                 UI.getCurrent().access( () -> {
@@ -285,9 +285,11 @@ public class AllUsersView extends HorizontalLayout {
                 UI.getCurrent().access( () -> {
                     Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
                     dialog.close();
+                    UI.getCurrent().getPage().reload();
                 });
             } catch (CompletionException ex) {
                 UI.getCurrent().access( () -> {
+                    System.out.println(ex.getMessage());
                     Notification.show("Ошибка: пользователь уже тренер", 1000, Notification.Position.MIDDLE);
                     dialog.close();
                 });
@@ -329,6 +331,7 @@ public class AllUsersView extends HorizontalLayout {
                 UI.getCurrent().access( () -> {
                     Notification.show("Готово!", 1000, Notification.Position.MIDDLE);
                     dialog.close();
+                    UI.getCurrent().getPage().reload();
                 });
             } catch (CompletionException ex) {
                 UI.getCurrent().access( () -> {

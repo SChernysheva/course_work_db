@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -104,7 +103,7 @@ public class BookingCourtService {
             if (!bookingCourtsRepository.existsById(id)) {
                 throw new EntityNotFoundException("Этого бронирования уже нет.");
             }
-            bookingCourtsRepository.deleteById(id);
+            bookingCourtsRepository.deleteBookingById(id);
         }).handle((result, ex) -> {
             if (ex != null) {
                 throw new CompletionException(new NotFoundException(ex.getMessage()));

@@ -74,7 +74,13 @@ public class UserInfoView extends VerticalLayout implements HasUrlParameter<Inte
 
 
         userInfoLayout.add(new Span("Группа: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getAllInfo())));
-        userInfoLayout.add(new Span("Тренер в группе: " + ((user.getGroup() == null) ? "Нет" : user.getGroup().getCoach().getUser().getLast_name())));
+        if (user.getGroup() != null && user.getGroup().getCoach() != null) {
+            userInfoLayout.add(new Span("Тренер в группе: " + user.getGroup().getCoach().getUser().getLast_name()));
+        } else if (user.getGroup() != null) {
+            userInfoLayout.add(new Span("Тренер в группе: " + "Тренер еще не назначен"));
+        } else {
+            userInfoLayout.add(new Span("Тренер в группе: нет"));
+        }
 
         ComboBox<Group> groupComboBox = (user.getGroup() == null) ? new ComboBox<>("Записать в группу") : new ComboBox<>("Перезаписать в группу");
         groupComboBox.setItems(allGroups);
