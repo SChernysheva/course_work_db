@@ -12,10 +12,12 @@ import java.util.List;
 @Repository
 public interface IScheduleRepository extends JpaRepository<Schedule, Integer> {
 
-    @Query("SELECT s FROM Schedule s WHERE s.weekday.name = :name AND s.court.id = :courtId")
-    public List<Schedule> getScheduleOnWeekDayName(@Param("name") String name, @Param("courtId") int courtId);
+    //@Query("SELECT s FROM Schedule s WHERE s.weekday.name = :name AND s.court.id = :courtId")
+    @Query(value = "SELECT * FROM GET_SCHEDULE_FOR_DAY_WEEK(:name, :courtId)", nativeQuery = true)
+    public List<Schedule> getScheduleOnWeekDayName(String name, int courtId);
 
-    @Query("SELECT s.time FROM Schedule s WHERE s.weekday.id = :id AND s.court.id = :courtId")
-    public List<Time> getBookingTimeForDayWeek(@Param("courtId") int courtId, @Param("id") int weekDayId);
+    //@Query("SELECT s.time FROM Schedule s WHERE s.weekday.id = :id AND s.court.id = :courtId")
+    @Query(value = "SELECT * FROM GET_BOOKING_TIME_FOR_DAY_WEEK(:courtId, :weekDayId)", nativeQuery = true)
+    List<Time> getBookingTimeForDayWeek(int courtId, int weekDayId);
 }
 

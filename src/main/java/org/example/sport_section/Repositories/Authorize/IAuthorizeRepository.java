@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 @Component
 public interface IAuthorizeRepository extends JpaRepository<UserModelAuthorization, Integer> {
-    //here
+    @Query(value = "SELECT * FROM GET_AUTH_BY_EMAIL(:email)", nativeQuery = true)
     public Optional<UserModelAuthorization> getByEmail(String email);
 
     @Query(value = "SELECT * FROM get_hash_password_for_email(:email)", nativeQuery = true)

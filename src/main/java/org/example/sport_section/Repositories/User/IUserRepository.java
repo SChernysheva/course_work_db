@@ -13,9 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface IUserRepository extends JpaRepository<User, Integer> {
-    @Query(value = "SELECT * FROM users WHERE email = :email", nativeQuery = true)
-    public Optional<User> findByEmail(@Param("email") String email);
-
+    @Query(value = "SELECT * FROM GET_USER_BY_EMAIL(:email)", nativeQuery = true)
+    public Optional<User> findByEmail(String email);
 
     @Transactional
     @Procedure(value = "add_user_into_group")

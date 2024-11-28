@@ -1,5 +1,7 @@
 package org.example.sport_section.Services.ScheduleService;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.example.sport_section.Exceptions.NotFoundException;
 import org.example.sport_section.Models.Groups.Schedule;
 import org.example.sport_section.Models.Weekday.Weekday;
 import org.example.sport_section.Repositories.ScheduleRepository.IScheduleRepository;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @Service
 public class ScheduleService {
@@ -77,6 +80,11 @@ public class ScheduleService {
     public CompletableFuture<Void> addSchedule(Schedule schedule) {
         return CompletableFuture.runAsync(() -> {
             scheduleRepository.save(schedule);
+        }).handle((result, ex) -> {
+            if (ex != null) {
+                throw new CompletionException(new NotFoundException("Ошибка"));
+            }
+            return result;
         });
     }
 

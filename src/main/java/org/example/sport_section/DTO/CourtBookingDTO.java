@@ -18,6 +18,18 @@ public class CourtBookingDTO {
         this.time = time;
         this.court = court;
     }
+    public CourtBookingDTO(User user, Time time, Court court) {
+        this.user = user;
+        this.group = null;
+        this.time = time;
+        this.court = court;
+    }
+    public CourtBookingDTO(Group group, Time time, Court court) {
+        this.user = null;
+        this.group = group;
+        this.time = time;
+        this.court = court;
+    }
 
     public User getUser() {
         return user;

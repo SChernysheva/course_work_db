@@ -10,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Integer> {
-    @Query(value = "SELECT * FROM ui_images WHERE image_page = :page", nativeQuery = true)
-    public Optional<Image> findByImagePage(@Param("page") String page);
+    @Query(value = "SELECT * FROM GET_IMAGES_BY_PAGE(:page)", nativeQuery = true)
+    Optional<Image> findByImagePage(String page);
 }

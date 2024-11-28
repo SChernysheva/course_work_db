@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Time;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 
 @Route("admin/addSchedule")
 public class AddScheduleGroupAdmin extends VerticalLayout {
@@ -127,10 +128,16 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
                 UI.getCurrent().access( () -> {
                     Notification.show("Выполняется..", 2000, Notification.Position.MIDDLE);
                 });
-                scheduleService.addSchedule(new Schedule(selectedTime, selectedGroup, selectedCourt, selectedWeekday)).join();
-                UI.getCurrent().access( () -> {
-                    Notification.show("Готово!", 2000, Notification.Position.MIDDLE);
-                });
+                try {
+                    scheduleService.addSchedule(new Schedule(selectedTime, selectedGroup, selectedCourt, selectedWeekday)).join();
+                    UI.getCurrent().access( () -> {
+                        Notification.show("Готово!", 2000, Notification.Position.MIDDLE);
+                    });
+                } catch (CompletionException ex) {
+                    UI.getCurrent().access( () -> {
+                        Notification.show("Ошибка", 2000, Notification.Position.MIDDLE);
+                    });
+                }
             }
         });
 
