@@ -89,6 +89,7 @@ public class ScheduleView extends HorizontalLayout {
             VerticalLayout vl = new VerticalLayout();
             vl.add(addScheduleButton());
             vl.add(addScheduleAddingButton());
+            vl.add(addGroupAddingButton());
             add(vl);
         }
     }
@@ -166,6 +167,28 @@ public class ScheduleView extends HorizontalLayout {
         Button schedule = new Button("Добавить новый слот");
         schedule.addClickListener(e -> {
             UI.getCurrent().navigate(AddScheduleGroupAdmin.class);
+        });
+        // Установка стилей для кнопки
+        schedule.getStyle().set("background-color", "#d3d3d3"); // Светло-серый цвет фона
+        schedule.getStyle().set("color", "#333333"); // Темно-серый цвет текста
+        schedule.getStyle().set("border", "none"); // Убирает стандартную обводку
+        schedule.getStyle().set("border-radius", "5px"); // Закругленные углы
+        schedule.getStyle().set("padding", "10px 20px"); // Внутренние отступы для увеличенного размера
+        schedule.getStyle().set("font-size", "16px"); // Размер текста
+        schedule.getStyle().set("cursor", "pointer"); // Изменение курсора на указатель при наведении
+
+// Установка эффекта при наведении
+        schedule.getElement().getThemeList().add("primary");
+        schedule.getStyle().set("transition", "background-color 0.3s"); // Плавный переход
+        schedule.addFocusListener(e -> schedule.getStyle().set("background-color", "#c0c0c0"));
+        schedule.addBlurListener(e -> schedule.getStyle().set("background-color", "#d3d3d3"));
+        return schedule;
+    }
+
+    private Button addGroupAddingButton() {
+        Button schedule = new Button("Создать новую группу");
+        schedule.addClickListener(e -> {
+            UI.getCurrent().navigate(AddNewGroupAdminView.class);
         });
         // Установка стилей для кнопки
         schedule.getStyle().set("background-color", "#d3d3d3"); // Светло-серый цвет фона
