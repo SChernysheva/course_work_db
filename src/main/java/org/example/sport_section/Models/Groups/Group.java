@@ -18,7 +18,7 @@ public class Group {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "coach_id", referencedColumnName = "id")
+    @JoinColumn(name = "coach_id")
     private Coach coach;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "group")

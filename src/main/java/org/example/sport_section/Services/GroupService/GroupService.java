@@ -44,6 +44,12 @@ public class GroupService {
     }
 
     @Async
+    public CompletableFuture<Void> editCoach(int groupId, int coachId) {
+        System.out.println("тренеру " + coachId + " группу " + groupId);
+        return CompletableFuture.runAsync(() -> groupRepository.editCoach(groupId, coachId));
+    }
+
+    @Async
     public CompletableFuture<Group> addGroup(Group group) {
         return CompletableFuture.supplyAsync(() ->  groupRepository.save(group))
         .handle((result, ex) -> {

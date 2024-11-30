@@ -29,19 +29,16 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
     private CourtService courtService;
     private GroupService groupService;
     private ScheduleService scheduleService;
-    private CoachService coachService;
 
     @Autowired
     public AddScheduleGroupAdmin(UserService userService, CourtService courtService, GroupService groupService,
-                                 ScheduleService scheduleService, CoachService coachService) {
+                                 ScheduleService scheduleService) {
         this.userService = userService;
         this.courtService = courtService;
         this.groupService = groupService;
         this.scheduleService = scheduleService;
-        this.coachService = coachService;
         setSizeFull();
 
-        List<Coach> coaches = coachService.getCoaches().join();
         List<Court> courts = courtService.getCourtsAsync().join();
         List<Group> groups = groupService.getGroups().join();
         List<Weekday> weekdays = scheduleService.getAllWeekdays().join();
@@ -61,11 +58,6 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
         groupComboBox.setItems(groups);
         groupComboBox.setItemLabelGenerator(Group::getName);
 
-        ComboBox<Coach> coachComboBox = new ComboBox<>("Выберите тренера");
-        coachComboBox.setItems(coaches);
-
-        coachComboBox.setItemLabelGenerator(getItemLabelForCoach());
-
         ComboBox<Weekday> weekdayComboBox = new ComboBox<>("Выберите день недели");
         weekdayComboBox.setItems(weekdays);
         weekdayComboBox.setItemLabelGenerator(Weekday::getWeekday);
@@ -84,11 +76,10 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
 
         generateTimeButton.addClickListener(e -> {
             Group selectedGroup = groupComboBox.getValue();
-            Coach selectedCoach = coachComboBox.getValue();
             Weekday selectedWeekday = weekdayComboBox.getValue();
             Court selectedCourt = courtComboBox.getValue();
 
-            if (selectedGroup != null && selectedCoach != null && selectedWeekday != null && selectedCourt != null) {
+            if (selectedGroup != null && selectedWeekday != null && selectedCourt != null) {
                 // Предположим, что у вас есть метод для получения доступного времени на основе выбранных параметров
                 List<Time> availableTimes = scheduleService.getAvailableTimeForNewSchedule(selectedWeekday.getId(),
                         selectedCourt.getId()).join();
@@ -120,11 +111,9 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
         okButton.addClickListener(e -> {
             Time selectedTime = timeComboBox.getValue();
             Group selectedGroup = groupComboBox.getValue();
-            Coach selectedCoach = coachComboBox.getValue();
             Weekday selectedWeekday = weekdayComboBox.getValue();
             Court selectedCourt = courtComboBox.getValue();
             if (selectedTime != null) {
-                selectedGroup.setCoach(selectedCoach);
                 UI.getCurrent().access( () -> {
                     Notification.show("Выполняется..", 2000, Notification.Position.MIDDLE);
                 });
@@ -141,7 +130,7 @@ public class AddScheduleGroupAdmin extends VerticalLayout {
             }
         });
 
-        layout.add(groupComboBox, coachComboBox, weekdayComboBox, courtComboBox, generateTimeButton, timeComboBox,
+        layout.add(groupComboBox, weekdayComboBox, courtComboBox, generateTimeButton, timeComboBox,
                 okButton, backButton);
         add(layout);
     }
