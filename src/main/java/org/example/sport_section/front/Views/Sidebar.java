@@ -12,6 +12,7 @@ import com.vaadin.flow.server.VaadinSession;
 import org.example.sport_section.Models.Users.User;
 import org.example.sport_section.Utils.Security.SecurityUtils;
 import org.example.sport_section.front.Views.Coaches.CoachesView;
+import org.example.sport_section.front.Views.DataBaseBackup.AdminDatabaseView;
 import org.example.sport_section.front.Views.Schedule.ScheduleView;
 import org.example.sport_section.front.Views.UsersViews.AllUsersView;
 import org.example.sport_section.front.Views.Home.HomePage;
@@ -130,9 +131,18 @@ public class Sidebar {
         });
         sidebar.add(createSidebarViewUser(user.getEmail()));
         sidebar.add(update);
+        if (isUserAdmin()) {
+            Button manageDatabaseButton = new Button("Управление копиями бд");
+            manageDatabaseButton.addClickListener(event ->
+                    ui.navigate(AdminDatabaseView.class));
+            manageDatabaseButton.getStyle().set("background-color", "#888888")  // Серый фон кнопки
+                    .set("color", "#ffffff")               // Белый текст
+                    .set("border", "none")                 // Убираем рамку
+                    .set("padding", "10px 20px")           // Отступы
+                    .set("border-radius", "5px");
+            sidebar.add(manageDatabaseButton);
+        }
         sidebar.add(getExitButton(ui));
-
-
         return sidebar;
     }
 
